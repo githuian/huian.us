@@ -1,213 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome — huian.us</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>My GitHub Notepad</title>
   <style>
-    :root {
-      --bg-color: #090a0f;
-      --card-bg: rgba(255, 255, 255, 0.03);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #6366f1;
-      --accent: #a855f7;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    /* Ambient background glow */
-    .glow-bg {
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-      filter: blur(80px);
-      pointer-events: none;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 900px;
-      padding: 3rem 2rem;
-      text-align: center;
-    }
-
-    /* Glassmorphism hero card */
-    .hero-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 4rem 2rem;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-      animation: fadeIn 0.8s ease-out;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 6px 16px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      color: #818cf8;
-      margin-bottom: 2rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #10b981;
-    }
-
-    h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    p.subtitle {
-      font-size: clamp(1rem, 2vw, 1.25rem);
-      color: var(--text-muted);
-      max-width: 600px;
-      margin: 0 auto 2.5rem auto;
-      line-height: 1.6;
-      font-weight: 300;
-    }
-
-    /* Grid layout */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-
-    .grid-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--card-border);
-      padding: 1.5rem;
-      border-radius: 16px;
-      text-align: left;
-      transition: all 0.3s ease;
-    }
-
-    .grid-card:hover {
-      transform: translateY(-4px);
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .grid-card h3 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.1rem;
-      color: var(--text-main);
-      margin-bottom: 0.5rem;
-    }
-
-    .grid-card p {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
-    footer {
-      margin-top: 3rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    body { margin: 0; font-family: sans-serif; background: #1e1e1e; color: #fff; }
+    textarea {
+      width: 100vw; height: 100vh; border: none; padding: 20px;
+      box-sizing: border-box; background: transparent; color: inherit;
+      font-size: 16px; outline: none; resize: none;
     }
   </style>
 </head>
 <body>
-
-  <div class="glow-bg"></div>
-
-  <main class="container">
-    <div class="hero-card">
-      <div class="status-badge">
-        <span class="status-dot"></span> System Operational
-      </div>
-      
-      <h1>Human</h1>
-      
-      <p class="subtitle">
-        A personal domain for projects, experiments, and self-hosted web applications.
-      </p>
-
-      <div class="grid">
-        <div class="grid-card">
-          <h3>Projects</h3>
-          <p>Directory of ongoing developments, codebases, and experimental tools.</p>
-        </div>
-        <div class="grid-card">
-          <h3>Lab & Services</h3>
-          <p>Hosted utilities, APIs, and web services running across cloud environments.</p>
-        </div>
-        <div class="grid-card">
-          <h3>Documentation</h3>
-          <p>Technical notes, architecture guides, and public repositories.</p>
-        </div>
-      </div>
-    </div>
-
-    <footer>
-      &copy; <span id="year"></span> huian.us — Hosted on GitHub Pages
-    </footer>
-  </main>
-
+  <textarea id="pad" placeholder="Type your notes here..."></textarea>
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const pad = document.getElementById('pad');
+    pad.value = localStorage.getItem('my_note') || '';
+    pad.addEventListener('input', () => {
+      localStorage.setItem('my_note', pad.value);
+    });
   </script>
 </body>
 </html>
