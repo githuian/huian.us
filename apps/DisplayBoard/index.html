@@ -2,114 +2,205 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Display Typed Text</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Display Board</title>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --text-color: #f8fafc;
-      --accent-color: #38bdf8;
-      --cursor-color: #38bdf8;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --muted: #94a3b8;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      background-color: var(--bg);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       min-height: 100vh;
-      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
     }
 
-    .container {
-      text-align: center;
-      max-width: 600px;
+    /* Input View */
+    .editor-container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
     h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      line-height: 1.4;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--accent);
     }
 
-    .typed-text {
-      color: var(--accent-color);
+    textarea {
+      width: 100%;
+      height: 180px;
+      background-color: var(--card);
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 1rem;
+      color: var(--text);
+      font-size: 1.1rem;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s ease;
     }
 
-    /* Blinking Cursor Animation */
-    .cursor {
-      display: inline-block;
-      width: 3px;
-      background-color: var(--cursor-color);
-      margin-left: 2px;
-      animation: blink 0.7s infinite;
+    textarea:focus {
+      border-color: var(--accent);
     }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
+    .btn-display {
+      width: 100%;
+      padding: 1rem;
+      background-color: var(--accent);
+      color: #0f172a;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: opacity 0.2s ease;
+    }
+
+    .btn-display:active {
+      opacity: 0.85;
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Fullscreen Board View */
+    .board {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+      color: #ffffff;
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .board.active {
+      display: flex;
+    }
+
+    #boardText {
+      font-weight: 800;
+      line-height: 1.1;
+      word-break: break-word;
+      white-space: pre-wrap;
+      width: 100%;
+    }
+
+    .close-hint {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>
-      I am <span class="typed-text"></span><span class="cursor">&nbsp;</span>
-    </h1>
+  <!-- Input Form -->
+  <div class="editor-container" id="editor">
+    <h1>Display Board</h1>
+    <textarea id="textInput" placeholder="Type message here..."></textarea>
+    <button class="btn-display" onclick="showBoard()">DISPLAY FULLSCREEN</button>
+    <p class="hint">Tap anywhere on the fullscreen board to exit.</p>
+  </div>
+
+  <!-- Fullscreen Display Board -->
+  <div class="board" id="board" onclick="hideBoard()">
+    <div id="boardText"></div>
+    <span class="close-hint">Tap anywhere to exit</span>
   </div>
 
   <script>
-    const typedTextSpan = document.querySelector(".typed-text");
-    
-    // Array of phrases to cycle through
-    const textArray = [
-      "a Developer.",
-      "a Designer.",
-      "building cool things.",
-      "ready to deploy!"
-    ];
+    const editor = document.getElementById('editor');
+    const board = document.getElementById('board');
+    const boardText = document.getElementById('boardText');
+    const textInput = document.getElementById('textInput');
 
-    // Timing configurations (in milliseconds)
-    const typingDelay = 100;
-    const erasingDelay = 50;
-    const newTextDelay = 2000; // Delay between current and next text
-    let textArrayIndex = 0;
-    let charIndex = 0;
+    function showBoard() {
+      const text = textInput.value.trim() || "TYPE SOMETHING";
+      boardText.textContent = text;
+      
+      board.classList.add('active');
 
-    function type() {
-      if (charIndex < textArray[textArrayIndex].length) {
-        typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
-        charIndex++;
-        setTimeout(type, typingDelay);
-      } else {
-        setTimeout(erase, newTextDelay);
+      // Attempt native browser fullscreen on supported mobile devices
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+
+      // Auto-scale font size based on text length
+      fitText();
+    }
+
+    function hideBoard() {
+      board.classList.remove('active');
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
       }
     }
 
-    function erase() {
-      if (charIndex > 0) {
-        typedTextSpan.textContent = textArray[textArrayIndex].substring(0, charIndex - 1);
-        charIndex--;
-        setTimeout(erase, erasingDelay);
+    function fitText() {
+      const len = boardText.textContent.length;
+      let fontSize = 20; // Default vmin unit
+
+      if (len < 5) {
+        fontSize = 35;
+      } else if (len < 15) {
+        fontSize = 25;
+      } else if (len < 40) {
+        fontSize = 18;
+      } else if (len < 100) {
+        fontSize = 12;
       } else {
-        textArrayIndex++;
-        if (textArrayIndex >= textArray.length) textArrayIndex = 0;
-        setTimeout(type, typingDelay + 500);
+        fontSize = 8;
       }
+
+      boardText.style.fontSize = fontSize + 'vmin';
     }
 
-    // Start typing on DOM load
-    document.addEventListener("DOMContentLoaded", function() {
-      if (textArray.length) setTimeout(type, newTextDelay / 2);
+    // Exit fullscreen with ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && board.classList.contains('active')) {
+        hideBoard();
+      }
     });
   </script>
 
