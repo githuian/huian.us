@@ -49,6 +49,33 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
 
+    .unit-toggle {
+      display: flex;
+      background: #121212;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      margin-bottom: 1.25rem;
+    }
+
+    .unit-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--subtext);
+      padding: 0.5rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .unit-btn.active {
+      background-color: var(--accent);
+      color: #ffffff;
+    }
+
     .form-group {
       display: flex;
       flex-direction: column;
@@ -126,6 +153,11 @@
   <h1>Tire Pressure Adjuster</h1>
 
   <div class="card">
+    <div class="unit-toggle">
+      <button class="unit-btn active" id="btnF" onclick="setUnit('F')">°F (Fahrenheit)</button>
+      <button class="unit-btn" id="btnC" onclick="setUnit('C')">°C (Celsius)</button>
+    </div>
+
     <div class="form-group">
       <label for="targetPsi">Target Cold PSI (Door Placard)</label>
       <div class="input-row">
@@ -138,7 +170,7 @@
       <label for="currentTemp">Current Air / Garage Temp</label>
       <div class="input-row">
         <input type="number" id="currentTemp" value="70" step="1">
-        <span class="unit">°F</span>
+        <span class="unit temp-unit">°F</span>
       </div>
     </div>
 
@@ -146,7 +178,7 @@
       <label for="targetTemp">Target Outside / Lowest Temp</label>
       <div class="input-row">
         <input type="number" id="targetTemp" value="30" step="1">
-        <span class="unit">°F</span>
+        <span class="unit temp-unit">°F</span>
       </div>
     </div>
 
@@ -159,19 +191,57 @@
 </div>
 
 <script>
+  let currentUnit = 'F';
+
+  function setUnit(unit) {
+    if (currentUnit === unit) return;
+
+    const currentTempEl = document.getElementById('currentTemp');
+    const targetTempEl = document.getElementById('targetTemp');
+
+    let currVal = parseFloat(currentTempEl.value) || 0;
+    let targVal = parseFloat(targetTempEl.value) || 0;
+
+    if (unit === 'C') {
+      // Convert F to C
+      currentTempEl.value = Math.round((currVal - 32) * (5 / 9));
+      targetTempEl.value = Math.round((targVal - 32) * (5 / 9));
+      document.getElementById('btnF').classList.remove('active');
+      document.getElementById('btnC').classList.add('active');
+    } else {
+      // Convert C to F
+      currentTempEl.value = Math.round((currVal * 9 / 5) + 32);
+      targetTempEl.value = Math.round((targVal * 9 / 5) + 32);
+      document.getElementById('btnC').classList.remove('active');
+      document.getElementById('btnF').classList.add('active');
+    }
+
+    currentUnit = unit;
+    document.querySelectorAll('.temp-unit').forEach(el => el.innerText = '°' + currentUnit);
+    calculatePressure();
+  }
+
   function calculatePressure() {
     const targetPsi = parseFloat(document.getElementById('targetPsi').value) || 0;
     const currentTemp = parseFloat(document.getElementById('currentTemp').value) || 0;
     const targetTemp = parseFloat(document.getElementById('targetTemp').value) || 0;
 
-    // Convert F to Kelvin: (F - 32) * 5/9 + 273.15
-    const T_curr_K = (currentTemp - 32) * (5 / 9) + 273.15;
-    const T_targ_K = (targetTemp - 32) * (5 / 9) + 273.15;
+    let T_curr_K, T_targ_K;
+
+    if (currentUnit === 'F') {
+      T_curr_K = (currentTemp - 32) * (5 / 9) + 273.15;
+      T_targ_K = (targetTemp - 32) * (5 / 9) + 273.15;
+    } else {
+      T_curr_K = currentTemp + 273.15;
+      T_targ_K = targetTemp + 273.15;
+    }
+
+    if (T_targ_K <= 0) return; // Guard against division by zero
 
     // Absolute pressure at target temp = Target Gauge PSI + 14.7 (standard atmospheric)
     const P_targ_abs = targetPsi + 14.7;
 
-    // Gay-Lussac's Law: P1/T1 = P2/T2 -> P_curr_abs = P_targ_abs * (T_curr / T_targ)
+    // Gay-Lussac's Law: P1/T1 = P2/T2
     const P_curr_abs = P_targ_abs * (T_curr_K / T_targ_K);
     const P_curr_gauge = P_curr_abs - 14.7;
 
@@ -179,12 +249,13 @@
 
     document.getElementById('adjustedPsi').innerText = P_curr_gauge.toFixed(1) + ' PSI';
     
+    const unitStr = '°' + currentUnit;
     if (diffPsi >= 0) {
       document.getElementById('explanationText').innerText = 
-        `Inflation target is +${diffPsi.toFixed(1)} PSI higher at ${currentTemp}°F to maintain ${targetPsi} PSI when temps drop to ${targetTemp}°F.`;
+        `Inflation target is +${diffPsi.toFixed(1)} PSI higher at ${currentTemp}${unitStr} to maintain ${targetPsi} PSI when temps drop to ${targetTemp}${unitStr}.`;
     } else {
       document.getElementById('explanationText').innerText = 
-        `Inflation target is ${diffPsi.toFixed(1)} PSI lower at ${currentTemp}°F to maintain ${targetPsi} PSI when temps rise to ${targetTemp}°F.`;
+        `Inflation target is ${diffPsi.toFixed(1)} PSI lower at ${currentTemp}${unitStr} to maintain ${targetPsi} PSI when temps rise to ${targetTemp}${unitStr}.`;
     }
   }
 
