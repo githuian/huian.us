@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Display Board</title>
+  
+  <!-- Web App Capabilities for iOS Chrome & Safari -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Display Board">
+  <meta name="mobile-web-app-capable" content="yes">
+
   <style>
     :root {
       --bg: #0f172a;
@@ -20,11 +27,16 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       background-color: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    body {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -94,15 +106,19 @@
     .board {
       display: none;
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       width: 100vw;
       height: 100vh;
+      height: 100dvh; 
       background-color: #000000;
       color: #ffffff;
-      z-index: 9999;
+      z-index: 99999;
       justify-content: center;
       align-items: center;
-      padding: 2rem;
+      padding: env(safe-area-inset-top, 2rem) env(safe-area-inset-right, 2rem) env(safe-area-inset-bottom, 2rem) env(safe-area-inset-left, 2rem);
       text-align: center;
       overflow: hidden;
       cursor: pointer;
@@ -122,7 +138,7 @@
 
     .close-hint {
       position: absolute;
-      bottom: 1rem;
+      bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
       left: 50%;
       transform: translateX(-50%);
       font-size: 0.75rem;
@@ -150,7 +166,6 @@
   </div>
 
   <script>
-    const editor = document.getElementById('editor');
     const board = document.getElementById('board');
     const boardText = document.getElementById('boardText');
     const textInput = document.getElementById('textInput');
@@ -161,25 +176,20 @@
       
       board.classList.add('active');
 
-      // Attempt native browser fullscreen on supported mobile devices
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
+      // Dismiss virtual keyboard to unlock full viewport height
+      document.activeElement.blur();
+      window.scrollTo(0, 0);
 
-      // Auto-scale font size based on text length
       fitText();
     }
 
     function hideBoard() {
       board.classList.remove('active');
-      if (document.fullscreenElement && document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      }
     }
 
     function fitText() {
       const len = boardText.textContent.length;
-      let fontSize = 20; // Default vmin unit
+      let fontSize = 20;
 
       if (len < 5) {
         fontSize = 35;
@@ -196,7 +206,6 @@
       boardText.style.fontSize = fontSize + 'vmin';
     }
 
-    // Exit fullscreen with ESC key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && board.classList.contains('active')) {
         hideBoard();
