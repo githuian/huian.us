@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Display Board</title>
   
-  <!-- Web App Capabilities for iOS Chrome & Safari -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Display Board">
   <meta name="mobile-web-app-capable" content="yes">
 
   <style>
@@ -176,15 +174,32 @@
       
       board.classList.add('active');
 
-      // Dismiss virtual keyboard to unlock full viewport height
+      // Dismiss soft keyboard
       document.activeElement.blur();
       window.scrollTo(0, 0);
+
+      // Trigger Native Fullscreen API (Desktop Chrome, Edge, Firefox, Android)
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(() => {});
+      } else if (docEl.webkitRequestFullscreen) { /* Safari / Older Chrome */
+        docEl.webkitRequestFullscreen().catch(() => {});
+      }
 
       fitText();
     }
 
     function hideBoard() {
       board.classList.remove('active');
+
+      // Exit Native Fullscreen if active
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen().catch(() => {});
+        }
+      }
     }
 
     function fitText() {
@@ -205,6 +220,13 @@
 
       boardText.style.fontSize = fontSize + 'vmin';
     }
+
+    // Sync state when exiting fullscreen via hardware Esc key on desktop
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        board.classList.remove('active');
+      }
+    });
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && board.classList.contains('active')) {
