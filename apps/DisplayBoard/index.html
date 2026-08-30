@@ -3,51 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Remote Display Board</title>
+  <title>Display Typed Text</title>
   <style>
-    body {
-      margin: 0;
-      background-color: #000;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-      box-sizing: border-box;
+    :root {
+      --bg-color: #0f172a;
+      --text-color: #f8fafc;
+      --accent-color: #38bdf8;
+      --cursor-color: #38bdf8;
     }
-    .text {
-      font-size: 8vw;
-      font-weight: 800;
-      line-height: 1.1;
-      word-break: break-word;
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 600px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .typed-text {
+      color: var(--accent-color);
+    }
+
+    /* Blinking Cursor Animation */
+    .cursor {
+      display: inline-block;
+      width: 3px;
+      background-color: var(--cursor-color);
+      margin-left: 2px;
+      animation: blink 0.7s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
   </style>
 </head>
 <body>
 
-  <div class="text" id="display">Loading...</div>
+  <div class="container">
+    <h1>
+      I am <span class="typed-text"></span><span class="cursor">&nbsp;</span>
+    </h1>
+  </div>
 
-<script>
-  async function fetchRemoteText() {
-    try {
-      // Fetches a text file from your repo (add timestamp parameter to prevent browser caching)
-      const response = await fetch('status.txt?t=' + Date.now());
-      if (response.ok) {
-        const text = await response.text();
-        document.getElementById('display').innerText = text.trim() || 'NO MESSAGE';
+  <script>
+    const typedTextSpan = document.querySelector(".typed-text");
+    
+    // Array of phrases to cycle through
+    const textArray = [
+      "a Developer.",
+      "a Designer.",
+      "building cool things.",
+      "ready to deploy!"
+    ];
+
+    // Timing configurations (in milliseconds)
+    const typingDelay = 100;
+    const erasingDelay = 50;
+    const newTextDelay = 2000; // Delay between current and next text
+    let textArrayIndex = 0;
+    let charIndex = 0;
+
+    function type() {
+      if (charIndex < textArray[textArrayIndex].length) {
+        typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
+        charIndex++;
+        setTimeout(type, typingDelay);
+      } else {
+        setTimeout(erase, newTextDelay);
       }
-    } catch (e) {
-      console.error('Fetch failed', e);
     }
-  }
 
-  // Poll for updates every 5 seconds
-  setInterval(fetchRemoteText, 5000);
-  fetchRemoteText();
-</script>
+    function erase() {
+      if (charIndex > 0) {
+        typedTextSpan.textContent = textArray[textArrayIndex].substring(0, charIndex - 1);
+        charIndex--;
+        setTimeout(erase, erasingDelay);
+      } else {
+        textArrayIndex++;
+        if (textArrayIndex >= textArray.length) textArrayIndex = 0;
+        setTimeout(type, typingDelay + 500);
+      }
+    }
+
+    // Start typing on DOM load
+    document.addEventListener("DOMContentLoaded", function() {
+      if (textArray.length) setTimeout(type, newTextDelay / 2);
+    });
+  </script>
 
 </body>
 </html>
