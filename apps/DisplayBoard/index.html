@@ -2,387 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tire Pressure & Cold Temp Adjuster</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remote Display Board</title>
   <style>
-    :root {
-      --bg: #121212;
-      --card-bg: #1e1e1e;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --text: #ffffff;
-      --subtext: #a0a0a0;
-      --border: #2a2a2a;
-      --danger: #ef4444;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      padding: 1rem 0.75rem;
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0 0.25rem;
-    }
-
-    h1 {
-      font-size: 1.15rem;
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #e0e0e0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn-action {
-      background: #2a2a2a;
-      border: 1px solid var(--border);
-      color: var(--subtext);
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.4rem 0.65rem;
-      border-radius: 6px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.3rem;
-      transition: all 0.2s ease;
-      touch-action: manipulation;
-    }
-
-    .btn-action:hover, .btn-action:active {
-      background: #333333;
-      color: #ffffff;
-    }
-
-    .btn-action.clear-btn:hover {
-      background: rgba(239, 68, 68, 0.15);
-      color: var(--danger);
-      border-color: var(--danger);
-    }
-
-    .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      transition: max-height 0.3s cubic-bezier(0, 1, 0, 1), opacity 0.25s ease, padding 0.3s ease;
-      overflow: hidden;
-      max-height: 1000px;
-      opacity: 1;
-    }
-
-    .card.collapsed {
-      max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      opacity: 0;
-      border-color: transparent;
-      margin: 0;
-    }
-
-    .unit-toggle {
-      display: flex;
-      background: #121212;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 3px;
-      margin-bottom: 1.25rem;
-    }
-
-    .unit-btn {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--subtext);
-      padding: 0.6rem;
-      font-weight: 700;
-      font-size: 0.85rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      touch-action: manipulation;
-    }
-
-    .unit-btn.active {
-      background-color: var(--accent);
-      color: #ffffff;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      margin-bottom: 1rem;
-    }
-
-    label {
-      font-size: 0.8rem;
-      color: var(--subtext);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    input[type="number"] {
-      flex: 1;
-      background: #121212;
-      border: 1px solid var(--border);
+      background-color: #000;
       color: #fff;
-      font-size: 1.1rem;
-      padding: 0.75rem 0.8rem;
-      border-radius: 8px;
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    input[type="number"]:focus {
-      border-color: var(--accent);
-    }
-
-    .unit {
-      font-weight: bold;
-      color: var(--subtext);
-      width: 40px;
-      text-align: right;
-    }
-
-    .result-box {
-      background: #182232;
-      border: 1px solid #1d4ed8;
-      border-radius: 10px;
-      padding: 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      margin-top: 0.5rem;
+      padding: 2rem;
+      box-sizing: border-box;
     }
-
-    .result-value {
-      font-size: 2rem;
+    .text {
+      font-size: 8vw;
       font-weight: 800;
-      color: #60a5fa;
-      margin: 0.2rem 0;
-    }
-
-    .result-label {
-      font-size: 0.8rem;
-      color: var(--subtext);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-
-    .explanation {
-      font-size: 0.8rem;
-      color: #888;
-      line-height: 1.4;
-      margin-top: 0.5rem;
-    }
-
-    @media (max-width: 360px) {
-      h1 {
-        font-size: 1rem;
-      }
-      .btn-action {
-        padding: 0.35rem 0.5rem;
-        font-size: 0.7rem;
-      }
+      line-height: 1.1;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header-bar">
-    <h1>Tire Pressure</h1>
-    <div class="header-actions">
-      <button class="btn-action clear-btn" onclick="clearInputs()" title="Clear all fields">
-        <span>✕</span> Clear
-      </button>
-      <button class="btn-action" id="toggleCardBtn" onclick="toggleCard()" title="Hide or show settings">
-        <span id="toggleIcon">▲</span> <span id="toggleText">Hide Bar</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="card" id="mainCard">
-    <div class="unit-toggle">
-      <button class="unit-btn active" id="btnF" onclick="setUnit('F')">°F (Fahrenheit)</button>
-      <button class="unit-btn" id="btnC" onclick="setUnit('C')">°C (Celsius)</button>
-    </div>
-
-    <div class="form-group">
-      <label for="targetPsi">Target Cold PSI (Door Placard)</label>
-      <div class="input-row">
-        <input type="number" id="targetPsi" value="42" step="1" inputmode="decimal">
-        <span class="unit">PSI</span>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="currentTemp">Current Air / Garage Temp</label>
-      <div class="input-row">
-        <input type="number" id="currentTemp" value="70" step="1" inputmode="decimal">
-        <span class="unit temp-unit">°F</span>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="targetTemp">Target Outside / Lowest Temp</label>
-      <div class="input-row">
-        <input type="number" id="targetTemp" value="30" step="1" inputmode="decimal">
-        <span class="unit temp-unit">°F</span>
-      </div>
-    </div>
-
-    <div class="result-box">
-      <div class="result-label">Set Pressure To (At Current Temp)</div>
-      <div class="result-value" id="adjustedPsi">--</div>
-      <div class="explanation" id="explanationText">Calculating...</div>
-    </div>
-  </div>
-</div>
+  <div class="text" id="display">Loading...</div>
 
 <script>
-  let currentUnit = 'F';
-
-  function setUnit(unit) {
-    if (currentUnit === unit) return;
-
-    const currentTempEl = document.getElementById('currentTemp');
-    const targetTempEl = document.getElementById('targetTemp');
-
-    let currVal = parseFloat(currentTempEl.value);
-    let targVal = parseFloat(targetTempEl.value);
-
-    if (unit === 'C') {
-      if (!isNaN(currVal)) currentTempEl.value = Math.round((currVal - 32) * (5 / 9));
-      if (!isNaN(targVal)) targetTempEl.value = Math.round((targVal - 32) * (5 / 9));
-      document.getElementById('btnF').classList.remove('active');
-      document.getElementById('btnC').classList.add('active');
-    } else {
-      if (!isNaN(currVal)) currentTempEl.value = Math.round((currVal * 9 / 5) + 32);
-      if (!isNaN(targVal)) targetTempEl.value = Math.round((targVal * 9 / 5) + 32);
-      document.getElementById('btnC').classList.remove('active');
-      document.getElementById('btnF').classList.add('active');
-    }
-
-    currentUnit = unit;
-    document.querySelectorAll('.temp-unit').forEach(el => el.innerText = '°' + currentUnit);
-    calculatePressure();
-  }
-
-  function calculatePressure() {
-    const targetPsiVal = document.getElementById('targetPsi').value;
-    const currentTempVal = document.getElementById('currentTemp').value;
-    const targetTempVal = document.getElementById('targetTemp').value;
-
-    if (targetPsiVal === '' || currentTempVal === '' || targetTempVal === '') {
-      document.getElementById('adjustedPsi').innerText = '--';
-      document.getElementById('explanationText').innerText = 'Please fill in all values.';
-      return;
-    }
-
-    const targetPsi = parseFloat(targetPsiVal) || 0;
-    const currentTemp = parseFloat(currentTempVal) || 0;
-    const targetTemp = parseFloat(targetTempVal) || 0;
-
-    let T_curr_K, T_targ_K;
-
-    if (currentUnit === 'F') {
-      T_curr_K = (currentTemp - 32) * (5 / 9) + 273.15;
-      T_targ_K = (targetTemp - 32) * (5 / 9) + 273.15;
-    } else {
-      T_curr_K = currentTemp + 273.15;
-      T_targ_K = targetTemp + 273.15;
-    }
-
-    if (T_targ_K <= 0) return;
-
-    // Ideal gas / Gay-Lussac's law using absolute ambient pressure
-    const P_targ_abs = targetPsi + 14.7;
-    const P_curr_abs = P_targ_abs * (T_curr_K / T_targ_K);
-    const P_curr_gauge = P_curr_abs - 14.7;
-
-    const diffPsi = P_curr_gauge - targetPsi;
-
-    document.getElementById('adjustedPsi').innerText = P_curr_gauge.toFixed(1) + ' PSI';
-    
-    const unitStr = '°' + currentUnit;
-    if (diffPsi >= 0) {
-      document.getElementById('explanationText').innerText = 
-        `Inflation target is +${diffPsi.toFixed(1)} PSI higher at ${currentTemp}${unitStr} to maintain ${targetPsi} PSI when temps drop to ${targetTemp}${unitStr}.`;
-    } else {
-      document.getElementById('explanationText').innerText = 
-        `Inflation target is ${diffPsi.toFixed(1)} PSI lower at ${currentTemp}${unitStr} to maintain ${targetPsi} PSI when temps rise to ${targetTemp}${unitStr}.`;
+  async function fetchRemoteText() {
+    try {
+      // Fetches a text file from your repo (add timestamp parameter to prevent browser caching)
+      const response = await fetch('status.txt?t=' + Date.now());
+      if (response.ok) {
+        const text = await response.text();
+        document.getElementById('display').innerText = text.trim() || 'NO MESSAGE';
+      }
+    } catch (e) {
+      console.error('Fetch failed', e);
     }
   }
 
-  function clearInputs() {
-    document.getElementById('targetPsi').value = '';
-    document.getElementById('currentTemp').value = '';
-    document.getElementById('targetTemp').value = '';
-    calculatePressure();
-  }
-
-  function toggleCard() {
-    const card = document.getElementById('mainCard');
-    const icon = document.getElementById('toggleIcon');
-    const text = document.getElementById('toggleText');
-
-    if (card.classList.contains('collapsed')) {
-      card.classList.remove('collapsed');
-      icon.innerText = '▲';
-      text.innerText = 'Hide Bar';
-    } else {
-      card.classList.add('collapsed');
-      icon.innerText = '▼';
-      text.innerText = 'Show Bar';
-    }
-  }
-
-  document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', calculatePressure);
-  });
-
-  calculatePressure();
+  // Poll for updates every 5 seconds
+  setInterval(fetchRemoteText, 5000);
+  fetchRemoteText();
 </script>
 
 </body>
