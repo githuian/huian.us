@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>ClipShare</title>
+<meta name="description" content="Copy and paste between your devices, instantly and peer-to-peer." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>" />
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e2229;
+    --border: #2a2f3a;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --accent: #5b9dff;
+    --accent-2: #34d399;
+    --danger: #f97066;
+    --radius: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --panel-2: #f0f1f4;
+      --border: #e1e4ea;
+      --text: #1a1d23;
+      --muted: #5f6673;
+      --accent: #2f6fed;
+      --accent-2: #0f9d68;
+      --danger: #d9362b;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --panel-2: #f0f1f4;
+    --border: #e1e4ea;
+    --text: #1a1d23;
+    --muted: #5f6673;
+    --accent: #2f6fed;
+    --accent-2: #0f9d68;
+    --danger: #d9362b;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+  .wrap { width: 100%; max-width: 720px; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  h1 { font-size: 1.4rem; margin: 0; display: flex; align-items: center; gap: 8px; }
+  h1 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); display: inline-block; transition: background .2s; }
+  h1 .dot.connected { background: var(--accent-2); }
+  .sub { color: var(--muted); font-size: 0.85rem; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    resize: vertical;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 1rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    line-height: 1.5;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button, input[type=text] {
+    font-size: 0.95rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    background: var(--panel-2);
+    color: var(--text);
+  }
+  button { cursor: pointer; font-weight: 600; transition: transform .05s ease, opacity .15s ease; }
+  button:active { transform: scale(0.97); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.ghost:hover { border-color: var(--accent); }
+  button:disabled { opacity: 0.45; cursor: default; }
+  input[type=text] { flex: 1; min-width: 120px; letter-spacing: 2px; text-transform: uppercase; }
+  .code-display {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    text-align: center;
+    padding: 14px 0 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .qr-box { display: flex; justify-content: center; padding: 6px 0 12px; }
+  .qr-box canvas { border-radius: 10px; background: #fff; padding: 8px; }
+  .muted { color: var(--muted); font-size: 0.85rem; }
+  .peers { color: var(--muted); font-size: 0.85rem; margin-top: 8px; }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 18px; border-radius: 999px; font-size: 0.9rem; opacity: 0;
+    transition: opacity .25s ease, transform .25s ease; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tabs button { flex: 1; background: var(--panel); }
+  .tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span id="statusDot" class="dot"></span> ClipShare</h1>
+    <span class="sub" id="statusText">not connected</span>
+  </header>
+
+  <div class="tabs">
+    <button id="tabHost" class="active">Start session</button>
+    <button id="tabJoin">Join session</button>
+  </div>
+
+  <div id="hostPanel" class="card">
+    <p class="muted" style="margin-top:0">Open this on your first device. Scan the code (or type it in) on your other device.</p>
+    <div class="code-display" id="hostCode">····</div>
+    <div class="qr-box"><canvas id="qrCanvas" width="180" height="180"></canvas></div>
+    <div class="row" style="justify-content:center">
+      <button id="newCodeBtn" class="ghost">New code</button>
+    </div>
+    <div class="peers" id="peerCount"></div>
+  </div>
+
+  <div id="joinPanel" class="card" style="display:none">
+    <p class="muted" style="margin-top:0">Enter the code shown on your other device.</p>
+    <div class="row">
+      <input type="text" id="joinInput" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters" />
+      <button id="joinBtn" class="primary">Connect</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <textarea id="clipboard" placeholder="Type, or paste (Cmd/Ctrl+V), here. It syncs to every connected device as you type."></textarea>
+    <div class="row" style="margin-top:12px">
+      <button id="copyBtn" class="primary">Copy to my clipboard</button>
+      <button id="pasteBtn" class="ghost">Paste from my clipboard</button>
+      <button id="clearBtn" class="ghost">Clear</button>
+    </div>
+  </div>
+
+  <p class="muted">
+    Text travels directly between your devices over an end-to-end encrypted WebRTC connection —
+    it is never stored on a server, only relayed briefly to help the two devices find each other.
+    Close the tab to end the session.
+  </p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+(function () {
+  const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
+  const PEER_PREFIX = "clipshare-";
+
+  const el = (id) => document.getElementById(id);
+  const statusDot = el("statusDot");
+  const statusText = el("statusText");
+  const hostPanel = el("hostPanel");
+  const joinPanel = el("joinPanel");
+  const tabHost = el("tabHost");
+  const tabJoin = el("tabJoin");
+  const hostCodeEl = el("hostCode");
+  const qrCanvas = el("qrCanvas");
+  const newCodeBtn = el("newCodeBtn");
+  const peerCountEl = el("peerCount");
+  const joinInput = el("joinInput");
+  const joinBtn = el("joinBtn");
+  const clipboard = el("clipboard");
+  const copyBtn = el("copyBtn");
+  const pasteBtn = el("pasteBtn");
+  const clearBtn = el("clearBtn");
+  const toastEl = el("toast");
+
+  let peer = null;
+  let mode = null; // 'host' | 'join'
+  let hostConns = []; // when hosting: list of DataConnections
+  let joinConn = null; // when joining: the single DataConnection to host
+  let suppressEcho = false;
+  let debounceTimer = null;
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toastEl.classList.remove("show"), 1800);
+  }
+
+  function setStatus(connected, text) {
+    statusDot.classList.toggle("connected", connected);
+    statusText.textContent = text;
+  }
+
+  function randomCode() {
+    let s = "";
+    for (let i = 0; i < 4; i++) s += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+    return s;
+  }
+
+  function drawQr(code) {
+    const url = new URL(location.href);
+    url.search = "?join=" + code;
+    QRCode.toCanvas(qrCanvas, url.toString(), { width: 180, margin: 1 }, (err) => {
+      if (err) console.error(err);
+    });
+  }
+
+  function destroyPeer() {
+    if (peer) {
+      try { peer.destroy(); } catch (e) {}
+      peer = null;
+    }
+    hostConns = [];
+    joinConn = null;
+  }
+
+  function broadcastFromHost(text, exceptConn) {
+    hostConns.forEach((c) => {
+      if (c !== exceptConn && c.open) c.send({ type: "text", value: text });
+    });
+  }
+
+  function wireIncomingConn(conn) {
+    conn.on("data", (data) => {
+      if (!data || data.type !== "text") return;
+      suppressEcho = true;
+      clipboard.value = data.value;
+      suppressEcho = false;
+      if (mode === "host") broadcastFromHost(data.value, conn);
+      toast("Updated from another device");
+    });
+    conn.on("close", () => {
+      hostConns = hostConns.filter((c) => c !== conn);
+      updatePeerCount();
+    });
+  }
+
+  function updatePeerCount() {
+    if (mode !== "host") return;
+    const n = hostConns.filter((c) => c.open).length;
+    peerCountEl.textContent = n === 0 ? "Waiting for a device to join…" : (n === 1 ? "1 device connected" : n + " devices connected");
+    setStatus(n > 0, n > 0 ? "connected" : "waiting");
+  }
+
+  function startHost(code) {
+    destroyPeer();
+    mode = "host";
+    hostCodeEl.textContent = code;
+    drawQr(code);
+    setStatus(false, "starting…");
+    peer = new Peer(PEER_PREFIX + code);
+    peer.on("open", () => {
+      setStatus(false, "waiting for a device to join");
+      updatePeerCount();
+    });
+    peer.on("connection", (conn) => {
+      hostConns.push(conn);
+      wireIncomingConn(conn);
+      conn.on("open", () => {
+        updatePeerCount();
+        if (clipboard.value) conn.send({ type: "text", value: clipboard.value });
+      });
+    });
+    peer.on("error", (err) => {
+      console.error(err);
+      if (err.type === "unavailable-id") {
+        toast("That code is in use, trying another…");
+        startHost(randomCode());
+      } else {
+        toast("Connection error: " + err.type);
+      }
+    });
+  }
+
+  function startJoin(code) {
+    destroyPeer();
+    mode = "join";
+    setStatus(false, "connecting…");
+    peer = new Peer();
+    peer.on("open", () => {
+      joinConn = peer.connect(PEER_PREFIX + code, { reliable: true });
+      wireIncomingConn(joinConn);
+      joinConn.on("open", () => {
+        setStatus(true, "connected");
+        toast("Connected!");
+      });
+      joinConn.on("close", () => setStatus(false, "disconnected"));
+    });
+    peer.on("error", (err) => {
+      console.error(err);
+      if (err.type === "peer-unavailable") {
+        setStatus(false, "code not found");
+        toast("No session found with that code");
+      } else {
+        toast("Connection error: " + err.type);
+      }
+    });
+  }
+
+  function sendLocalText(text) {
+    if (mode === "host") {
+      broadcastFromHost(text, null);
+    } else if (mode === "join" && joinConn && joinConn.open) {
+      joinConn.send({ type: "text", value: text });
+    }
+  }
+
+  clipboard.addEventListener("input", () => {
+    if (suppressEcho) return;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => sendLocalText(clipboard.value), 120);
+  });
+
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(clipboard.value);
+      toast("Copied to clipboard");
+    } catch (e) {
+      toast("Couldn't access clipboard — select the text and copy manually");
+    }
+  });
+
+  pasteBtn.addEventListener("click", async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      clipboard.value = text;
+      sendLocalText(text);
+      toast("Pasted and sent");
+    } catch (e) {
+      toast("Couldn't read clipboard — paste manually with Cmd/Ctrl+V");
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    clipboard.value = "";
+    sendLocalText("");
+    clipboard.focus();
+  });
+
+  function showTab(which) {
+    const host = which === "host";
+    tabHost.classList.toggle("active", host);
+    tabJoin.classList.toggle("active", !host);
+    hostPanel.style.display = host ? "" : "none";
+    joinPanel.style.display = host ? "none" : "";
+  }
+
+  tabHost.addEventListener("click", () => {
+    showTab("host");
+    if (mode !== "host") startHost(randomCode());
+  });
+  tabJoin.addEventListener("click", () => {
+    showTab("join");
+    if (mode === "host") destroyPeer();
+    setStatus(false, "enter a code to join");
+  });
+  newCodeBtn.addEventListener("click", () => startHost(randomCode()));
+  joinBtn.addEventListener("click", () => {
+    const code = joinInput.value.trim().toUpperCase();
+    if (code.length === 4) startJoin(code);
+    else toast("Enter the 4-character code");
+  });
+  joinInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") joinBtn.click();
+  });
+  joinInput.addEventListener("input", () => {
+    joinInput.value = joinInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  });
+
+  // Auto-join from ?join=CODE (e.g. scanned QR code)
+  const params = new URLSearchParams(location.search);
+  const joinParam = (params.get("join") || "").toUpperCase();
+  if (joinParam.length === 4) {
+    showTab("join");
+    joinInput.value = joinParam;
+    startJoin(joinParam);
+  } else {
+    startHost(randomCode());
+  }
+})();
+</script>
+</body>
+</html>

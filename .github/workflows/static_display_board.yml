@@ -31,7 +31,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './apps/DisplayBoard'
+          path: '.'
           # Disambiguates re-runs by tying artifact name to job attempt
           name: 'github-pages-${{ github.run_id }}-${{ github.run_attempt }}'
 
