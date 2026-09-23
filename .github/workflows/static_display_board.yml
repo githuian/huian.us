@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -40,3 +40,11 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: 'github-pages-${{ github.run_id }}-${{ github.run_attempt }}'
+
+      - name: Tag deployment
+        run: |
+          TAG="deploy-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_RUN_NUMBER}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Deployed to GitHub Pages: ${{ steps.deployment.outputs.page_url }}"
+          git push origin "$TAG"
