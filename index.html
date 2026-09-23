@@ -1,252 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Display Board</title>
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --accent: #38bdf8;
-      --text: #f8fafc;
-      --muted: #94a3b8;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>huian.us</title>
+<meta name="description" content="A small collection of single-purpose apps." />
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e2229;
+    --border: #2a2f3a;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --accent: #5b9dff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --panel-2: #f0f1f4;
+      --border: #e1e4ea;
+      --text: #1a1d23;
+      --muted: #5f6673;
+      --accent: #2f6fed;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      overflow: hidden;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-
-    /* Input View */
-    .editor-container {
-      width: 100%;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      text-align: center;
-      color: var(--accent);
-    }
-
-    textarea {
-      width: 100%;
-      height: 180px;
-      background-color: var(--card);
-      border: 2px solid #334155;
-      border-radius: 12px;
-      padding: 1rem;
-      color: var(--text);
-      font-size: 1.1rem;
-      resize: none;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    textarea:focus {
-      border-color: var(--accent);
-    }
-
-    .btn-display {
-      width: 100%;
-      padding: 1rem;
-      background-color: var(--accent);
-      color: #0f172a;
-      font-size: 1.2rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: opacity 0.2s ease;
-    }
-
-    .btn-display:active {
-      opacity: 0.85;
-    }
-
-    .hint {
-      font-size: 0.85rem;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    .app-link {
-      display: block;
-      font-size: 0.9rem;
-      color: var(--accent);
-      text-align: center;
-      text-decoration: none;
-    }
-
-    .app-link:active {
-      opacity: 0.85;
-    }
-
-    /* Fullscreen Board View */
-    .board {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh; 
-      background-color: #000000;
-      color: #ffffff;
-      z-index: 99999;
-      justify-content: center;
-      align-items: center;
-      padding: env(safe-area-inset-top, 2rem) env(safe-area-inset-right, 2rem) env(safe-area-inset-bottom, 2rem) env(safe-area-inset-left, 2rem);
-      text-align: center;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .board.active {
-      display: flex;
-    }
-
-    #boardText {
-      font-weight: 800;
-      line-height: 1.1;
-      word-break: break-word;
-      white-space: pre-wrap;
-      width: 100%;
-    }
-
-    .close-hint {
-      position: absolute;
-      bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.4);
-      pointer-events: none;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-  </style>
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 48px 16px;
+  }
+  .wrap { width: 100%; max-width: 560px; }
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 8px;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 28px;
+  }
+  .apps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .app-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color .15s ease, transform .05s ease;
+  }
+  .app-card:hover { border-color: var(--accent); }
+  .app-card:active { transform: scale(0.99); }
+  .app-icon {
+    font-size: 1.6rem;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel-2);
+    border-radius: 10px;
+  }
+  .app-info h2 {
+    font-size: 1.05rem;
+    margin: 0 0 2px;
+  }
+  .app-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .arrow {
+    margin-left: auto;
+    color: var(--muted);
+    flex: none;
+  }
+</style>
 </head>
 <body>
+<div class="wrap">
+  <h1>huian.us</h1>
+  <p class="sub">A small collection of single-purpose apps.</p>
 
-  <!-- Input Form -->
-  <div class="editor-container" id="editor">
-    <h1>Display Board</h1>
-    <textarea id="textInput" placeholder="Type message here..."></textarea>
-    <button class="btn-display" onclick="showBoard()">DISPLAY FULLSCREEN</button>
-    <p class="hint">Tap anywhere on the fullscreen board to exit.</p>
-    <a class="app-link" href="/apps/ClipShare/">ClipShare: one shared clipboard across devices &rarr;</a>
+  <div class="apps">
+    <a class="app-card" href="/apps/DisplayBoard/">
+      <span class="app-icon">🖥️</span>
+      <span class="app-info">
+        <h2>Display Board</h2>
+        <p>Type a message, show it fullscreen and huge on any screen.</p>
+      </span>
+      <span class="arrow">&rarr;</span>
+    </a>
+
+    <a class="app-card" href="/apps/ClipShare/">
+      <span class="app-icon">📋</span>
+      <span class="app-info">
+        <h2>ClipShare</h2>
+        <p>One shared clipboard, synced across every device.</p>
+      </span>
+      <span class="arrow">&rarr;</span>
+    </a>
   </div>
-
-  <!-- Fullscreen Display Board -->
-  <div class="board" id="board" onclick="hideBoard()">
-    <div id="boardText"></div>
-    <span class="close-hint">Tap anywhere to exit</span>
-  </div>
-
-  <script>
-    const board = document.getElementById('board');
-    const boardText = document.getElementById('boardText');
-    const textInput = document.getElementById('textInput');
-
-    function showBoard() {
-      const text = textInput.value.trim() || "TYPE SOMETHING";
-      boardText.textContent = text;
-      
-      board.classList.add('active');
-
-      // Dismiss soft keyboard
-      document.activeElement.blur();
-      window.scrollTo(0, 0);
-
-      // Trigger Native Fullscreen API (Desktop Chrome, Edge, Firefox, Android)
-      const docEl = document.documentElement;
-      if (docEl.requestFullscreen) {
-        docEl.requestFullscreen().catch(() => {});
-      } else if (docEl.webkitRequestFullscreen) { /* Safari / Older Chrome */
-        docEl.webkitRequestFullscreen().catch(() => {});
-      }
-
-      fitText();
-    }
-
-    function hideBoard() {
-      board.classList.remove('active');
-
-      // Exit Native Fullscreen if active
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        if (document.exitFullscreen) {
-          document.exitFullscreen().catch(() => {});
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen().catch(() => {});
-        }
-      }
-    }
-
-    function fitText() {
-      const len = boardText.textContent.length;
-      let fontSize = 20;
-
-      if (len < 5) {
-        fontSize = 35;
-      } else if (len < 15) {
-        fontSize = 25;
-      } else if (len < 40) {
-        fontSize = 18;
-      } else if (len < 100) {
-        fontSize = 12;
-      } else {
-        fontSize = 8;
-      }
-
-      boardText.style.fontSize = fontSize + 'vmin';
-    }
-
-    // Sync state when exiting fullscreen via hardware Esc key on desktop
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) {
-        board.classList.remove('active');
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && board.classList.contains('active')) {
-        hideBoard();
-      }
-    });
-  </script>
-
+</div>
 </body>
 </html>
