@@ -1,0 +1,20 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "clipshare": {
+      "text": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.isString() && newData.val().length < 20000"
+      },
+      "files": {
+        ".read": true,
+        ".write": true,
+        "$fileId": {
+          ".validate": "newData.hasChildren(['name', 'size', 'type', 'url', 'storagePath', 'uploadedAt']) && newData.child('name').isString() && newData.child('name').val().length < 500 && newData.child('size').isNumber() && newData.child('size').val() <= 52428800 && newData.child('type').isString() && newData.child('url').isString() && newData.child('storagePath').isString() && newData.child('uploadedAt').val() === now"
+        }
+      }
+    }
+  }
+}
