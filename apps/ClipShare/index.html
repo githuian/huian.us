@@ -87,6 +87,7 @@
     border-radius: 10px;
     border: 1px solid var(--border);
     padding: 10px 14px;
+    min-height: 44px;
     background: var(--panel-2);
     color: var(--text);
     cursor: pointer;
@@ -97,6 +98,70 @@
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   button.ghost:hover { border-color: var(--accent); }
   .muted { color: var(--muted); font-size: 0.85rem; }
+
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 22px 16px;
+    text-align: center;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .dropzone:hover, .dropzone:focus-visible { border-color: var(--accent); }
+  .dropzone.drag { border-color: var(--accent); background: var(--panel-2); color: var(--text); }
+  .dropzone .hint { font-size: 0.8rem; margin-top: 4px; }
+
+  .progress {
+    position: relative;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .progress-bar {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 40%;
+    background: var(--accent);
+    border-radius: 999px;
+    animation: indeterminate 1.1s infinite ease-in-out;
+  }
+  @keyframes indeterminate {
+    0% { left: -40%; }
+    100% { left: 100%; }
+  }
+  .upload-row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+  .file-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .file-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .file-meta { flex: 1 1 auto; min-width: 0; }
+  .file-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-sub { font-size: 0.78rem; color: var(--muted); }
+  .file-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .file-actions button { padding: 8px 10px; min-height: 38px; font-size: 0.85rem; }
+  .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  @media (max-width: 480px) {
+    .row > button { flex: 1 1 auto; }
+    .file-item { flex-wrap: wrap; }
+    .file-actions { width: 100%; justify-content: flex-end; }
+  }
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
@@ -123,8 +188,21 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="dropzone" id="dropZone" tabindex="0" role="button" aria-label="Choose or drop a file to share">
+      <div>📎 Tap to choose a file, or drop it here</div>
+      <div class="hint">Shared with everyone who has this link · up to 50 MB</div>
+    </div>
+    <input type="file" id="fileInput" multiple hidden />
+    <div id="uploadStatus" style="display:none">
+      <div class="progress"><div class="progress-bar"></div></div>
+      <div class="upload-row"><span id="uploadName"></span><span>Uploading…</span></div>
+    </div>
+    <ul class="file-list" id="fileList"></ul>
+  </div>
+
   <p class="muted">
-    This is one shared board — everyone who opens this page sees and can edit the same text.
+    This is one shared board — everyone who opens this page sees and can edit the same text and files.
     It's stored so it's still here when you come back, on any device.
   </p>
 </div>
@@ -133,6 +211,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function () {
   const firebaseConfig = {
@@ -147,7 +226,17 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const boardRef = db.ref("clipshare/text");
+  const filesRef = db.ref("clipshare/files");
   const connectedRef = db.ref(".info/connected");
+
+  // Files themselves live in Supabase Storage (free tier); only their
+  // metadata (name/size/url) lives in the Firebase Realtime Database above.
+  const SUPABASE_URL = "https://uokpjmdtqymymxssxscj.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vyO4OGo6YyjU4GlRKC9Z-Q_6kuZLC3h";
+  const SUPABASE_BUCKET = "clipshare";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
   const el = (id) => document.getElementById(id);
   const statusDot = el("statusDot");
@@ -157,6 +246,11 @@
   const pasteBtn = el("pasteBtn");
   const clearBtn = el("clearBtn");
   const toastEl = el("toast");
+  const dropZone = el("dropZone");
+  const fileInput = el("fileInput");
+  const fileList = el("fileList");
+  const uploadStatus = el("uploadStatus");
+  const uploadName = el("uploadName");
 
   let debounceTimer = null;
   let lastLocalEditAt = 0;
@@ -221,6 +315,165 @@
     lastLocalEditAt = Date.now();
     writeValue("");
     clipboard.focus();
+  });
+
+  // ---- File sharing ----
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function fileIcon(type) {
+    if (!type) return "📄";
+    if (type.startsWith("image/")) return "🖼️";
+    if (type.startsWith("video/")) return "🎬";
+    if (type.startsWith("audio/")) return "🎵";
+    if (type === "application/pdf") return "📕";
+    if (type.includes("zip") || type.includes("compressed")) return "🗜️";
+    return "📄";
+  }
+
+  function renderFiles(entries) {
+    fileList.innerHTML = "";
+    entries
+      .sort((a, b) => (b.uploadedAt || 0) - (a.uploadedAt || 0))
+      .forEach(({ id, data }) => {
+        const li = document.createElement("li");
+        li.className = "file-item";
+
+        const icon = document.createElement("span");
+        icon.className = "file-icon";
+        icon.textContent = fileIcon(data.type);
+
+        const meta = document.createElement("div");
+        meta.className = "file-meta";
+        const name = document.createElement("div");
+        name.className = "file-name";
+        name.textContent = data.name;
+        const sub = document.createElement("div");
+        sub.className = "file-sub";
+        sub.textContent = formatSize(data.size || 0);
+        meta.appendChild(name);
+        meta.appendChild(sub);
+
+        const actions = document.createElement("div");
+        actions.className = "file-actions";
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.className = "ghost icon-btn";
+        downloadBtn.textContent = "Download";
+        downloadBtn.addEventListener("click", () => {
+          const a = document.createElement("a");
+          a.href = data.url;
+          a.download = data.name;
+          a.target = "_blank";
+          a.rel = "noopener";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        });
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "ghost icon-btn danger";
+        deleteBtn.textContent = "✕";
+        deleteBtn.title = "Remove for everyone";
+        deleteBtn.addEventListener("click", () => deleteFile(id, data));
+
+        actions.appendChild(downloadBtn);
+        actions.appendChild(deleteBtn);
+
+        li.appendChild(icon);
+        li.appendChild(meta);
+        li.appendChild(actions);
+        fileList.appendChild(li);
+      });
+  }
+
+  filesRef.on("value", (snap) => {
+    const val = snap.val() || {};
+    renderFiles(Object.keys(val).map((id) => ({ id, data: val[id] })));
+  });
+
+  async function deleteFile(id, data) {
+    try {
+      if (data.storagePath) {
+        await sb.storage.from(SUPABASE_BUCKET).remove([data.storagePath]);
+      }
+      await filesRef.child(id).remove();
+      toast("File removed");
+    } catch (e) {
+      toast("Couldn't remove file");
+    }
+  }
+
+  async function uploadFile(file) {
+    if (file.size > MAX_FILE_BYTES) {
+      toast(`"${file.name}" is over the 50 MB limit`);
+      return;
+    }
+    const id = filesRef.push().key;
+    const storagePath = `${id}-${file.name}`;
+
+    uploadStatus.style.display = "block";
+    uploadName.textContent = file.name;
+
+    const { error } = await sb.storage
+      .from(SUPABASE_BUCKET)
+      .upload(storagePath, file, { contentType: file.type || undefined, upsert: false });
+
+    if (error) {
+      toast(`Couldn't upload "${file.name}"`);
+      uploadStatus.style.display = "none";
+      return;
+    }
+
+    const { data: pub } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(storagePath);
+    await filesRef.child(id).set({
+      name: file.name,
+      size: file.size,
+      type: file.type || "",
+      url: pub.publicUrl,
+      storagePath,
+      uploadedAt: firebase.database.ServerValue.TIMESTAMP,
+    });
+    uploadStatus.style.display = "none";
+    toast(`Shared "${file.name}"`);
+  }
+
+  function handleFiles(fileListLike) {
+    Array.from(fileListLike || []).forEach((file) => {
+      uploadFile(file);
+    });
+  }
+
+  dropZone.addEventListener("click", () => fileInput.click());
+  dropZone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+  fileInput.addEventListener("change", () => {
+    handleFiles(fileInput.files);
+    fileInput.value = "";
+  });
+
+  ["dragenter", "dragover"].forEach((evt) =>
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag");
+    })
+  );
+  ["dragleave", "drop"].forEach((evt) =>
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("drag");
+    })
+  );
+  dropZone.addEventListener("drop", (e) => {
+    handleFiles(e.dataTransfer && e.dataTransfer.files);
   });
 })();
 </script>
