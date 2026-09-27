@@ -256,11 +256,11 @@
   let lastLocalEditAt = 0;
   let lastWrittenValue = null;
 
-  function toast(msg) {
+  function toast(msg, duration) {
     toastEl.textContent = msg;
     toastEl.classList.add("show");
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => toastEl.classList.remove("show"), 1800);
+    toast._t = setTimeout(() => toastEl.classList.remove("show"), duration || 1800);
   }
 
   connectedRef.on("value", (snap) => {
@@ -399,18 +399,19 @@
   async function deleteFile(id, data) {
     try {
       if (data.storagePath) {
-        await sb.storage.from(SUPABASE_BUCKET).remove([data.storagePath]);
+        const { error } = await sb.storage.from(SUPABASE_BUCKET).remove([data.storagePath]);
+        if (error) throw error;
       }
       await filesRef.child(id).remove();
       toast("File removed");
     } catch (e) {
-      toast("Couldn't remove file");
+      toast(`Couldn't remove file: ${e && e.message ? e.message : e}`, 4000);
     }
   }
 
   async function uploadFile(file) {
     if (file.size > MAX_FILE_BYTES) {
-      toast(`"${file.name}" is over the 50 MB limit`);
+      toast(`"${file.name}" is over the 50 MB limit`, 4000);
       return;
     }
     const id = filesRef.push().key;
@@ -419,27 +420,28 @@
     uploadStatus.style.display = "block";
     uploadName.textContent = file.name;
 
-    const { error } = await sb.storage
-      .from(SUPABASE_BUCKET)
-      .upload(storagePath, file, { contentType: file.type || undefined, upsert: false });
+    try {
+      const { error } = await sb.storage
+        .from(SUPABASE_BUCKET)
+        .upload(storagePath, file, { contentType: file.type || undefined, upsert: false });
+      if (error) throw error;
 
-    if (error) {
-      toast(`Couldn't upload "${file.name}"`);
+      const { data: pub } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(storagePath);
+      await filesRef.child(id).set({
+        name: file.name,
+        size: file.size,
+        type: file.type || "",
+        url: pub.publicUrl,
+        storagePath,
+        uploadedAt: firebase.database.ServerValue.TIMESTAMP,
+      });
+      toast(`Shared "${file.name}"`);
+    } catch (e) {
+      const reason = e && e.message ? e.message : String(e);
+      toast(`Couldn't upload "${file.name}": ${reason}`, 5000);
+    } finally {
       uploadStatus.style.display = "none";
-      return;
     }
-
-    const { data: pub } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(storagePath);
-    await filesRef.child(id).set({
-      name: file.name,
-      size: file.size,
-      type: file.type || "",
-      url: pub.publicUrl,
-      storagePath,
-      uploadedAt: firebase.database.ServerValue.TIMESTAMP,
-    });
-    uploadStatus.style.display = "none";
-    toast(`Shared "${file.name}"`);
   }
 
   function handleFiles(fileListLike) {
