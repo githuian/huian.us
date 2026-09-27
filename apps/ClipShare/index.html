@@ -153,6 +153,32 @@
   .file-actions button { padding: 8px 10px; min-height: 38px; font-size: 0.85rem; }
   .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
 
+  .char-counter { color: var(--muted); font-size: 0.82rem; margin-left: auto; }
+  .char-counter.over { color: var(--danger); font-weight: 600; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button:disabled:active { transform: none; }
+
+  .text-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .text-item {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .text-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .text-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+  .text-time { color: var(--muted); font-size: 0.78rem; }
+  .text-actions { display: flex; gap: 6px; }
+  .text-actions button { padding: 8px 10px; min-height: 38px; font-size: 0.85rem; }
+
   @media (max-width: 480px) {
     .row > button { flex: 1 1 auto; }
     .file-item { flex-wrap: wrap; }
@@ -176,12 +202,14 @@
   </header>
 
   <div class="card">
-    <textarea id="clipboard" placeholder="Type or paste (Cmd/Ctrl+V) here. It syncs to this same page on every device."></textarea>
+    <textarea id="composeBox" placeholder="Type or paste (Cmd/Ctrl+V) here, then Share. Each share adds a new entry below — everyone with the link sees it."></textarea>
     <div class="row" style="margin-top:12px">
-      <button id="copyBtn" class="primary">Copy to my clipboard</button>
-      <button id="pasteBtn" class="ghost">Paste from my clipboard</button>
-      <button id="clearBtn" class="ghost">Clear</button>
+      <button id="shareBtn" class="primary" disabled>Share</button>
+      <button id="pasteShareBtn" class="ghost">Paste from my clipboard</button>
+      <span class="char-counter" id="charCounter">0 / 20,000</span>
     </div>
+    <ul class="text-list" id="textList"></ul>
+    <p class="muted" id="textEmpty">Nothing shared yet.</p>
   </div>
 
   <div class="card">
@@ -199,8 +227,8 @@
   </div>
 
   <p class="muted">
-    This is one shared board — everyone who opens this page sees and can edit the same text and files.
-    It's stored so it's still here when you come back, on any device.
+    Everyone who opens this page shares the same board — text entries and files here are visible
+    to anyone with the link, and stay here so they're still around when you come back, on any device.
   </p>
 </div>
 
@@ -222,9 +250,11 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-  const boardRef = db.ref("clipshare/text");
+  const textsRef = db.ref("clipshare/texts");
   const filesRef = db.ref("clipshare/files");
   const connectedRef = db.ref(".info/connected");
+
+  const TEXT_MAX_LEN = 20000;
 
   // Files themselves live in Supabase Storage (free tier); only their
   // metadata (name/size/url) lives in the Firebase Realtime Database above.
@@ -238,10 +268,12 @@
   const el = (id) => document.getElementById(id);
   const statusDot = el("statusDot");
   const statusText = el("statusText");
-  const clipboard = el("clipboard");
-  const copyBtn = el("copyBtn");
-  const pasteBtn = el("pasteBtn");
-  const clearBtn = el("clearBtn");
+  const composeBox = el("composeBox");
+  const shareBtn = el("shareBtn");
+  const pasteShareBtn = el("pasteShareBtn");
+  const charCounter = el("charCounter");
+  const textList = el("textList");
+  const textEmpty = el("textEmpty");
   const toastEl = el("toast");
   const dropZone = el("dropZone");
   const fileInput = el("fileInput");
@@ -252,10 +284,6 @@
   const progressBar = el("progressBar");
   const uploadBytes = el("uploadBytes");
   const uploadRate = el("uploadRate");
-
-  let debounceTimer = null;
-  let lastLocalEditAt = 0;
-  let lastWrittenValue = null;
 
   function toast(msg, duration) {
     toastEl.textContent = msg;
@@ -270,52 +298,127 @@
     statusText.textContent = connected ? "synced" : "connecting…";
   });
 
-  boardRef.on("value", (snap) => {
-    const val = snap.val() || "";
-    if (val === lastWrittenValue) return;
-    // Don't clobber text the user is actively typing right now.
-    if (document.activeElement === clipboard && Date.now() - lastLocalEditAt < 1500) return;
-    clipboard.value = val;
-    lastWrittenValue = val;
-  });
+  // ---- Text sharing (multiple entries) ----
 
-  function writeValue(value) {
-    lastWrittenValue = value;
-    boardRef.set(value);
+  function timeAgo(ts) {
+    if (!ts) return "";
+    const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+    if (s < 5) return "just now";
+    if (s < 60) return `${s}s ago`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
   }
 
-  clipboard.addEventListener("input", () => {
-    lastLocalEditAt = Date.now();
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => writeValue(clipboard.value), 250);
+  function updateCharCounter() {
+    const len = composeBox.value.length;
+    charCounter.textContent = `${len.toLocaleString()} / ${TEXT_MAX_LEN.toLocaleString()}`;
+    const over = len > TEXT_MAX_LEN;
+    charCounter.classList.toggle("over", over);
+    shareBtn.disabled = len === 0 || over;
+  }
+  composeBox.addEventListener("input", updateCharCounter);
+  updateCharCounter();
+
+  function renderTexts(entries) {
+    textList.innerHTML = "";
+    entries.sort((a, b) => (b.data.createdAt || 0) - (a.data.createdAt || 0));
+    textEmpty.style.display = entries.length ? "none" : "block";
+
+    entries.forEach(({ id, data }) => {
+      const li = document.createElement("li");
+      li.className = "text-item";
+
+      const body = document.createElement("div");
+      body.className = "text-body";
+      body.textContent = data.text;
+
+      const meta = document.createElement("div");
+      meta.className = "text-meta";
+      const time = document.createElement("span");
+      time.className = "text-time";
+      time.textContent = timeAgo(data.createdAt);
+
+      const actions = document.createElement("div");
+      actions.className = "text-actions";
+
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "ghost";
+      copyBtn.textContent = "Copy";
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(data.text);
+          toast("Copied to clipboard");
+        } catch (e) {
+          toast("Couldn't access clipboard — select the text and copy manually");
+        }
+      });
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "ghost";
+      deleteBtn.textContent = "✕";
+      deleteBtn.title = "Remove for everyone";
+      deleteBtn.addEventListener("click", () => deleteText(id));
+
+      actions.appendChild(copyBtn);
+      actions.appendChild(deleteBtn);
+      meta.appendChild(time);
+      meta.appendChild(actions);
+      li.appendChild(body);
+      li.appendChild(meta);
+      textList.appendChild(li);
+    });
+  }
+
+  textsRef.on("value", (snap) => {
+    const val = snap.val() || {};
+    renderTexts(Object.keys(val).map((id) => ({ id, data: val[id] })));
   });
 
-  copyBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(clipboard.value);
-      toast("Copied to clipboard");
-    } catch (e) {
-      toast("Couldn't access clipboard — select the text and copy manually");
+  async function shareText() {
+    const text = composeBox.value;
+    if (!text) return;
+    if (text.length > TEXT_MAX_LEN) {
+      toast(`Too long: ${text.length.toLocaleString()} / ${TEXT_MAX_LEN.toLocaleString()} characters — trim it and try again`, 4500);
+      return;
     }
-  });
+    try {
+      const id = textsRef.push().key;
+      await textsRef.child(id).set({
+        text,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+      });
+      composeBox.value = "";
+      updateCharCounter();
+      toast("Shared");
+    } catch (e) {
+      const reason = e && e.message ? e.message : String(e);
+      toast(`Couldn't share text: ${reason}`, 5000);
+    }
+  }
+  shareBtn.addEventListener("click", shareText);
 
-  pasteBtn.addEventListener("click", async () => {
+  async function deleteText(id) {
+    try {
+      await textsRef.child(id).remove();
+      toast("Removed");
+    } catch (e) {
+      const reason = e && e.message ? e.message : String(e);
+      toast(`Couldn't remove: ${reason}`, 4000);
+    }
+  }
+
+  pasteShareBtn.addEventListener("click", async () => {
     try {
       const text = await navigator.clipboard.readText();
-      clipboard.value = text;
-      lastLocalEditAt = Date.now();
-      writeValue(text);
-      toast("Pasted and saved");
+      composeBox.value = text;
+      updateCharCounter();
+      composeBox.focus();
     } catch (e) {
       toast("Couldn't read clipboard — paste manually with Cmd/Ctrl+V");
     }
-  });
-
-  clearBtn.addEventListener("click", () => {
-    clipboard.value = "";
-    lastLocalEditAt = Date.now();
-    writeValue("");
-    clipboard.focus();
   });
 
   // ---- File sharing ----
