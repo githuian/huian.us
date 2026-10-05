@@ -1,0 +1,21 @@
+# Pings Supabase Storage (used by ClipShare, apps/ClipShare) so the free-tier
+# project doesn't auto-pause after 7 days of inactivity.
+name: ClipShare Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 6 * * 1,4' # Monday and Thursday at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Storage bucket
+        run: |
+          curl -sf -X POST "https://uokpjmdtqymymxssxscj.supabase.co/storage/v1/object/list/clipshare" \
+            -H "apikey: sb_publishable_vyO4OGo6YyjU4GlRKC9Z-Q_6kuZLC3h" \
+            -H "authorization: Bearer sb_publishable_vyO4OGo6YyjU4GlRKC9Z-Q_6kuZLC3h" \
+            -H "content-type: application/json" \
+            -d '{"prefix":"","limit":1}' \
+            -o /dev/null
