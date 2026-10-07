@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Speak Spanish</title>
+<meta name="description" content="Listen to native pronunciation, then practice speaking Spanish out loud — no writing drills." />
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e2229;
+    --border: #2a2f3a;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --accent: #5b9dff;
+    --accent-2: #34d399;
+    --warn: #f0b429;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --panel-2: #f0f1f4;
+      --border: #e1e4ea;
+      --text: #1a1d23;
+      --muted: #5f6673;
+      --accent: #2f6fed;
+      --accent-2: #0f9d68;
+      --warn: #b5790a;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px 64px;
+    padding-top: calc(40px + env(safe-area-inset-top, 0px));
+  }
+  .wrap { width: 100%; max-width: 640px; }
+
+  .top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  a.home {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  a.home:hover { color: var(--accent); }
+
+  h1 { font-size: 1.5rem; margin: 10px 0 4px; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 20px; }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .pill {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .pill b { color: var(--text); }
+
+  .notice {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: none;
+  }
+  .notice.shown { display: block; }
+  .notice b { color: var(--warn); }
+
+  .section-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 12px;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+    background: rgba(91,157,255,0.15);
+    color: var(--accent);
+  }
+
+  .phrase {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 4px;
+  }
+  .phonetic {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 16px;
+    font-style: italic;
+  }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 9px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    touch-action: manipulation;
+    flex: none;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn:disabled:hover { border-color: var(--border); }
+
+  .btn.listen { border-color: var(--accent); color: var(--accent); }
+  .btn.speak { border-color: var(--accent-2); color: var(--accent-2); }
+  .btn.speak.listening {
+    background: var(--accent-2);
+    color: #06281c;
+    border-color: var(--accent-2);
+  }
+  .btn.meaning { margin-top: 10px; display: block; width: 100%; }
+
+  .meaning {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.95rem;
+    color: var(--text);
+    display: none;
+  }
+  .meaning.shown { display: block; }
+
+  .result {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    display: none;
+  }
+  .result.shown { display: block; }
+  .result.good { background: rgba(52,211,153,0.12); color: var(--accent-2); }
+  .result.ok { background: rgba(240,180,41,0.12); color: var(--warn); }
+  .result.bad { background: rgba(91,157,255,0.08); color: var(--muted); }
+
+  .btn.more {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .btn.more:hover { border-color: var(--accent); color: var(--text); }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: center;
+    margin-top: 28px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="home" href="/">&larr; huian.us</a>
+    <span class="pill" id="streak"></span>
+  </div>
+
+  <h1>Speak Spanish</h1>
+  <p class="sub">Listen to native pronunciation, then say it out loud. No typing, no writing drills.</p>
+
+  <div class="meta">
+    <span class="pill" id="dayInfo"></span>
+  </div>
+
+  <div class="notice" id="noMicNotice">
+    <b>Heads up:</b> this browser doesn't support speech recognition, so the "Your turn" scoring
+    won't work here. You can still use "Listen" and practice out loud on your own — try Chrome on
+    desktop or Android for the speaking score.
+  </div>
+
+  <h2 class="section-title">Today's phrases</h2>
+  <div id="phraseSection"></div>
+  <button class="btn more" id="morePhraseBtn">+ Another phrase</button>
+
+  <footer>
+    Today's set rotates automatically at midnight (your local time) through a bank of
+    <span id="phraseCount"></span> spoken phrases across greetings, food, directions, shopping,
+    travel, plans, and everyday small talk.<br><br>
+    "Your turn" uses your browser's built-in speech recognition (no server involved on this site) —
+    your browser vendor's speech service may process the audio to transcribe it, same as any other
+    use of your device's dictation feature.
+  </footer>
+</div>
+
+<script>
+const PHRASES = [
+{ cat: `Greetings`, es: `Hola, ¿cómo estás?`, en: `Hi, how are you?`, phon: `OH-lah, KOH-moh ess-TAHS` },
+{ cat: `Greetings`, es: `Buenos días`, en: `Good morning`, phon: `BWEH-nohs DEE-ahs` },
+{ cat: `Greetings`, es: `Buenas tardes`, en: `Good afternoon`, phon: `BWEH-nahs TAR-dess` },
+{ cat: `Greetings`, es: `Buenas noches`, en: `Good evening / good night`, phon: `BWEH-nahs NOH-chess` },
+{ cat: `Greetings`, es: `Mucho gusto`, en: `Nice to meet you`, phon: `MOO-choh GOOS-toh` },
+{ cat: `Greetings`, es: `¿Cómo te llamas?`, en: `What's your name?`, phon: `KOH-moh teh YAH-mahs` },
+{ cat: `Greetings`, es: `Me llamo Carlos`, en: `My name is Carlos`, phon: `meh YAH-moh KAR-lohs` },
+{ cat: `Greetings`, es: `¿De dónde eres?`, en: `Where are you from?`, phon: `deh DOHN-deh EH-rehs` },
+{ cat: `Greetings`, es: `Hasta luego`, en: `See you later`, phon: `AHS-tah LWEH-goh` },
+{ cat: `Greetings`, es: `Nos vemos pronto`, en: `See you soon`, phon: `nohs VEH-mohs PROHN-toh` },
+
+{ cat: `Food & Drinks`, es: `¿Qué me recomienda?`, en: `What do you recommend?`, phon: `keh meh reh-koh-mee-EHN-dah` },
+{ cat: `Food & Drinks`, es: `Quisiera un café, por favor`, en: `I would like a coffee, please`, phon: `kee-see-EH-rah oon kah-FEH por fah-VOR` },
+{ cat: `Food & Drinks`, es: `La cuenta, por favor`, en: `The check, please`, phon: `lah KWEN-tah por fah-VOR` },
+{ cat: `Food & Drinks`, es: `¿Tienen algo sin gluten?`, en: `Do you have something gluten-free?`, phon: `tee-EH-nen AHL-goh seen GLOO-ten` },
+{ cat: `Food & Drinks`, es: `Está delicioso`, en: `It's delicious`, phon: `ess-TAH deh-lee-see-OH-soh` },
+{ cat: `Food & Drinks`, es: `¿Me trae la carta, por favor?`, en: `Could you bring me the menu, please?`, phon: `meh TRAH-eh lah KAR-tah por fah-VOR` },
+{ cat: `Food & Drinks`, es: `Para llevar, por favor`, en: `To go, please`, phon: `PAH-rah yeh-VAR por fah-VOR` },
+{ cat: `Food & Drinks`, es: `Soy alérgico a los mariscos`, en: `I'm allergic to shellfish`, phon: `soy ah-LEHR-hee-koh ah lohs mah-REES-kohs` },
+
+{ cat: `Directions`, es: `¿Dónde está el baño?`, en: `Where is the bathroom?`, phon: `DOHN-deh ess-TAH el BAH-nyoh` },
+{ cat: `Directions`, es: `¿Cómo llego a la estación?`, en: `How do I get to the station?`, phon: `KOH-moh YEH-goh ah lah ess-tah-see-OHN` },
+{ cat: `Directions`, es: `Siga derecho`, en: `Go straight ahead`, phon: `SEE-gah deh-REH-choh` },
+{ cat: `Directions`, es: `Gire a la izquierda`, en: `Turn left`, phon: `HEE-reh ah lah ees-kee-EHR-dah` },
+{ cat: `Directions`, es: `Gire a la derecha`, en: `Turn right`, phon: `HEE-reh ah lah deh-REH-chah` },
+{ cat: `Directions`, es: `¿Está lejos de aquí?`, en: `Is it far from here?`, phon: `ess-TAH LEH-hohs deh ah-KEE` },
+{ cat: `Directions`, es: `¿Cuánto cuesta el taxi al aeropuerto?`, en: `How much is a taxi to the airport?`, phon: `KWAN-toh KWES-tah el TAHK-see ahl ah-eh-roh-PWEHR-toh` },
+{ cat: `Directions`, es: `Estoy perdido`, en: `I'm lost`, phon: `ess-TOY pehr-DEE-doh` },
+
+{ cat: `Shopping`, es: `¿Cuánto cuesta esto?`, en: `How much does this cost?`, phon: `KWAN-toh KWES-tah ESS-toh` },
+{ cat: `Shopping`, es: `¿Tiene esto en otro color?`, en: `Do you have this in another color?`, phon: `tee-EH-neh ESS-toh en OH-troh koh-LOR` },
+{ cat: `Shopping`, es: `¿Puedo probármelo?`, en: `Can I try it on?`, phon: `PWEH-doh proh-BAR-meh-loh` },
+{ cat: `Shopping`, es: `Es muy caro`, en: `It's very expensive`, phon: `ehs mwee KAH-roh` },
+{ cat: `Shopping`, es: `¿Aceptan tarjeta de crédito?`, en: `Do you accept credit cards?`, phon: `ah-SEP-tahn tar-HEH-tah deh KREH-dee-toh` },
+{ cat: `Shopping`, es: `Solo estoy mirando, gracias`, en: `I'm just looking, thanks`, phon: `SOH-loh ess-TOY mee-RAHN-doh GRAH-see-ahs` },
+
+{ cat: `Travel & Emergencies`, es: `Necesito ayuda`, en: `I need help`, phon: `neh-seh-SEE-toh ah-YOO-dah` },
+{ cat: `Travel & Emergencies`, es: `Llame a un médico, por favor`, en: `Please call a doctor`, phon: `YAH-meh ah oon MEH-dee-koh por fah-VOR` },
+{ cat: `Travel & Emergencies`, es: `He perdido mi pasaporte`, en: `I've lost my passport`, phon: `eh pehr-DEE-doh mee pah-sah-POR-teh` },
+{ cat: `Travel & Emergencies`, es: `¿Dónde está el hospital más cercano?`, en: `Where's the nearest hospital?`, phon: `DOHN-deh ess-TAH el ohs-pee-TAHL mahs sehr-KAH-noh` },
+{ cat: `Travel & Emergencies`, es: `¿Habla inglés?`, en: `Do you speak English?`, phon: `AH-blah een-GLEHS` },
+{ cat: `Travel & Emergencies`, es: `No entiendo, ¿puede repetirlo?`, en: `I don't understand, can you repeat that?`, phon: `noh en-tee-EHN-doh PWEH-deh reh-peh-TEER-loh` },
+
+{ cat: `Making Plans`, es: `¿Quieres salir a cenar esta noche?`, en: `Do you want to go out for dinner tonight?`, phon: `kee-EH-rehs sah-LEER ah seh-NAR ESS-tah NOH-cheh` },
+{ cat: `Making Plans`, es: `¿A qué hora nos vemos?`, en: `What time are we meeting?`, phon: `ah keh OH-rah nohs VEH-mohs` },
+{ cat: `Making Plans`, es: `¿Nos vemos el sábado?`, en: `Shall we meet on Saturday?`, phon: `nohs VEH-mohs el SAH-bah-doh` },
+{ cat: `Making Plans`, es: `Tengo planes este fin de semana`, en: `I have plans this weekend`, phon: `TEN-goh PLAH-nehs ESS-teh feen deh seh-MAH-nah` },
+{ cat: `Making Plans`, es: `¿Te gustaría venir a la fiesta?`, en: `Would you like to come to the party?`, phon: `teh goos-tah-REE-ah veh-NEER ah lah fee-ESS-tah` },
+{ cat: `Making Plans`, es: `Lo siento, no puedo`, en: `I'm sorry, I can't`, phon: `loh see-EHN-toh noh PWEH-doh` },
+
+{ cat: `Everyday Small Talk`, es: `¿Qué tal tu día?`, en: `How was your day?`, phon: `keh tahl too DEE-ah` },
+{ cat: `Everyday Small Talk`, es: `Estoy un poco cansado`, en: `I'm a little tired`, phon: `ess-TOY oon POH-koh kahn-SAH-doh` },
+{ cat: `Everyday Small Talk`, es: `¿Qué hora es?`, en: `What time is it?`, phon: `keh OH-rah ess` },
+{ cat: `Everyday Small Talk`, es: `No pasa nada`, en: `It's no big deal / no worries`, phon: `noh PAH-sah NAH-dah` },
+{ cat: `Everyday Small Talk`, es: `¡Qué bueno!`, en: `That's great!`, phon: `keh BWEH-noh` },
+{ cat: `Everyday Small Talk`, es: `Más o menos`, en: `So-so / more or less`, phon: `mahs oh MEH-nohs` },
+{ cat: `Everyday Small Talk`, es: `¿En serio?`, en: `Really? Seriously?`, phon: `en SEH-ree-oh` },
+
+{ cat: `Opinions & Feelings`, es: `Creo que tienes razón`, en: `I think you're right`, phon: `KREH-oh keh tee-EH-nehs rah-SOHN` },
+{ cat: `Opinions & Feelings`, es: `Me encanta esta canción`, en: `I love this song`, phon: `meh en-KAHN-tah ESS-tah kahn-see-OHN` },
+{ cat: `Opinions & Feelings`, es: `Estoy muy emocionado`, en: `I'm very excited`, phon: `ess-TOY mwee eh-moh-see-oh-NAH-doh` },
+{ cat: `Opinions & Feelings`, es: `No estoy de acuerdo`, en: `I don't agree`, phon: `noh ess-TOY deh ah-KWEHR-doh` },
+{ cat: `Opinions & Feelings`, es: `Eso me preocupa un poco`, en: `That worries me a little`, phon: `EH-soh meh preh-oh-KOO-pah oon POH-koh` }
+];
+
+const DAILY_COUNT = 5;
+
+function dayIndexFromEpoch() {
+  const now = new Date();
+  const midnightLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return Math.floor(midnightLocal / 86400000);
+}
+
+function dailyWindow(dayIdx, bankLength, windowSize) {
+  const start = (dayIdx * windowSize) % bankLength;
+  const indices = [];
+  for (let i = 0; i < windowSize; i++) {
+    indices.push((start + i) % bankLength);
+  }
+  return indices;
+}
+
+// --- Text-to-speech ---
+let cachedVoice = null;
+function pickSpanishVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  return voices.find(v => v.lang === 'es-ES') ||
+         voices.find(v => v.lang && v.lang.startsWith('es')) ||
+         null;
+}
+function speak(text, rate) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'es-ES';
+  utter.rate = rate || 1;
+  const voice = cachedVoice || pickSpanishVoice();
+  if (voice) utter.voice = voice;
+  speechSynthesis.speak(utter);
+}
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = () => { cachedVoice = pickSpanishVoice(); };
+}
+
+// --- Speech recognition (scoring) ---
+const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+const micSupported = !!SpeechRecognitionCtor;
+let recognizer = null;
+let activeSpeakHandlers = null;
+
+function stripAccents(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+function normalize(s) {
+  return stripAccents(s.toLowerCase())
+    .replace(/[¿?¡!.,;:"']/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+function similarity(target, heard) {
+  const a = normalize(target), b = normalize(heard);
+  const maxLen = Math.max(a.length, b.length, 1);
+  return 1 - levenshtein(a, b) / maxLen;
+}
+
+function getRecognizer() {
+  if (recognizer) return recognizer;
+  recognizer = new SpeechRecognitionCtor();
+  recognizer.lang = 'es-ES';
+  recognizer.interimResults = false;
+  recognizer.maxAlternatives = 1;
+  recognizer.continuous = false;
+  recognizer.onresult = (e) => {
+    const heard = e.results[0][0].transcript;
+    if (activeSpeakHandlers) activeSpeakHandlers.onHeard(heard);
+  };
+  recognizer.onerror = (e) => {
+    if (activeSpeakHandlers) activeSpeakHandlers.onError(e.error);
+  };
+  recognizer.onend = () => {
+    if (activeSpeakHandlers) activeSpeakHandlers.onEnd();
+  };
+  return recognizer;
+}
+
+function buildCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const tag = document.createElement('span');
+  tag.className = 'tag';
+  tag.textContent = item.cat;
+  card.appendChild(tag);
+
+  const phrase = document.createElement('p');
+  phrase.className = 'phrase';
+  phrase.textContent = item.es;
+  card.appendChild(phrase);
+
+  const phon = document.createElement('p');
+  phon.className = 'phonetic';
+  phon.textContent = item.phon;
+  card.appendChild(phon);
+
+  const row = document.createElement('div');
+  row.className = 'btn-row';
+
+  const listenBtn = document.createElement('button');
+  listenBtn.className = 'btn listen';
+  listenBtn.textContent = '🔊 Listen';
+  listenBtn.addEventListener('click', () => speak(item.es, 1));
+  row.appendChild(listenBtn);
+
+  const slowBtn = document.createElement('button');
+  slowBtn.className = 'btn listen';
+  slowBtn.textContent = '🐢 Slow';
+  slowBtn.addEventListener('click', () => speak(item.es, 0.6));
+  row.appendChild(slowBtn);
+
+  const speakBtn = document.createElement('button');
+  speakBtn.className = 'btn speak';
+  speakBtn.textContent = '🎤 Your turn';
+  if (!micSupported) speakBtn.disabled = true;
+  row.appendChild(speakBtn);
+
+  card.appendChild(row);
+
+  const result = document.createElement('div');
+  result.className = 'result';
+  card.appendChild(result);
+
+  const meaningBtn = document.createElement('button');
+  meaningBtn.className = 'btn meaning';
+  meaningBtn.textContent = 'Show meaning';
+  card.appendChild(meaningBtn);
+
+  const meaning = document.createElement('div');
+  meaning.className = 'meaning';
+  meaning.textContent = item.en;
+  card.appendChild(meaning);
+
+  meaningBtn.addEventListener('click', () => {
+    const shown = meaning.classList.toggle('shown');
+    meaningBtn.textContent = shown ? 'Hide meaning' : 'Show meaning';
+  });
+
+  speakBtn.addEventListener('click', () => {
+    if (!micSupported) return;
+    speechSynthesis.cancel();
+    const rec = getRecognizer();
+
+    activeSpeakHandlers = {
+      onHeard(heard) {
+        const score = similarity(item.es, heard);
+        result.classList.add('shown');
+        if (score >= 0.75) {
+          result.className = 'result shown good';
+          result.textContent = `✅ Nice! Heard: "${heard}"`;
+        } else if (score >= 0.45) {
+          result.className = 'result shown ok';
+          result.textContent = `🟡 Close — heard: "${heard}". Try again, or hit Slow to hear it broken down.`;
+        } else {
+          result.className = 'result shown bad';
+          result.textContent = `Heard: "${heard}". Doesn't quite match yet — tap Listen and try once more.`;
+        }
+      },
+      onError(err) {
+        result.classList.add('shown');
+        result.className = 'result shown bad';
+        if (err === 'not-allowed' || err === 'permission-denied') {
+          result.textContent = `Microphone access was blocked — allow it in your browser's site settings to use "Your turn."`;
+        } else if (err === 'no-speech') {
+          result.textContent = `Didn't catch anything — tap "Your turn" and try speaking again.`;
+        } else {
+          result.textContent = `Speech recognition had a hiccup (${err}) — try again.`;
+        }
+      },
+      onEnd() {
+        speakBtn.classList.remove('listening');
+        speakBtn.textContent = '🎤 Your turn';
+      }
+    };
+
+    speakBtn.classList.add('listening');
+    speakBtn.textContent = '🎤 Listening…';
+    try {
+      rec.start();
+    } catch (e) {
+      // start() throws if already running; ignore, user can retap
+      speakBtn.classList.remove('listening');
+      speakBtn.textContent = '🎤 Your turn';
+    }
+  });
+
+  return card;
+}
+
+function setupMoreButton(btn, bank, shownIndices, section) {
+  btn.addEventListener('click', () => {
+    if (shownIndices.size >= bank.length) {
+      btn.textContent = `You've seen every phrase in the bank`;
+      btn.disabled = true;
+      return;
+    }
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * bank.length);
+    } while (shownIndices.has(idx));
+    shownIndices.add(idx);
+    section.appendChild(buildCard(bank[idx]));
+
+    if (shownIndices.size >= bank.length) {
+      btn.textContent = `You've seen every phrase in the bank`;
+      btn.disabled = true;
+    }
+  });
+}
+
+function updateStreak() {
+  try {
+    const todayKey = new Date().toDateString();
+    const lastDay = localStorage.getItem('speakSpanishLastDay');
+    let streak = parseInt(localStorage.getItem('speakSpanishStreak') || '0', 10);
+
+    if (lastDay !== todayKey) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      streak = (lastDay === yesterday.toDateString()) ? streak + 1 : 1;
+      localStorage.setItem('speakSpanishStreak', String(streak));
+      localStorage.setItem('speakSpanishLastDay', todayKey);
+    }
+    document.getElementById('streak').textContent = '\u{1F525} ' + streak + ' day' + (streak === 1 ? '' : 's');
+  } catch (e) {
+    document.getElementById('streak').textContent = '';
+  }
+}
+
+(function init() {
+  if (!micSupported) {
+    document.getElementById('noMicNotice').classList.add('shown');
+  }
+
+  const dayIdx = dayIndexFromEpoch();
+  const indices = dailyWindow(dayIdx, PHRASES.length, DAILY_COUNT);
+  const section = document.getElementById('phraseSection');
+  indices.forEach(i => section.appendChild(buildCard(PHRASES[i])));
+
+  document.getElementById('dayInfo').innerHTML = '<b>' + new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) + '</b>';
+  document.getElementById('phraseCount').textContent = PHRASES.length;
+
+  setupMoreButton(document.getElementById('morePhraseBtn'), PHRASES, new Set(indices), section);
+
+  updateStreak();
+})();
+</script>
+</body>
+</html>
