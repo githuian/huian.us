@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy · huian.us</title>
+<meta name="description" content="Privacy policy for the huian.us apps on the web, Android, iOS and Chrome." />
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2f3a;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --accent: #5b9dff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --border: #e1e4ea;
+      --text: #1a1d23;
+      --muted: #5f6673;
+      --accent: #2f6fed;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 48px 16px;
+    line-height: 1.6;
+  }
+  .wrap { width: 100%; max-width: 680px; }
+  a { color: var(--accent); }
+  .back { font-size: 0.9rem; text-decoration: none; }
+  h1 { font-size: 1.6rem; margin: 16px 0 4px; }
+  .sub { color: var(--muted); font-size: 0.95rem; margin: 0 0 28px; }
+  h2 { font-size: 1.15rem; margin: 36px 0 8px; }
+  h3 { font-size: 1rem; margin: 20px 0 6px; }
+  p, li { font-size: 0.95rem; }
+  ul { padding-left: 20px; }
+  .summary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+  }
+  .summary ul { margin: 8px 0 0; }
+  .warn {
+    border-left: 3px solid var(--accent);
+    padding: 2px 0 2px 14px;
+  }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">&larr; huian.us</a>
+  <h1>Privacy Policy</h1>
+  <p class="sub">Effective October 7, 2026</p>
+
+  <p>huian.us is a small collection of apps made by an independent developer. This policy covers every app published under huian.us, whether you use it on the web, on Android (Google Play), on iOS (App Store) or as a Chrome extension. It explains what each app collects, why, where it goes and how to have it deleted.</p>
+
+  <div class="summary">
+    <strong>The short version</strong>
+    <ul>
+      <li>No ads, no analytics, no tracking across apps or websites.</li>
+      <li>Your data is never sold or shared for marketing.</li>
+      <li>Data leaves your device only when an app needs it to work, as described below.</li>
+    </ul>
+  </div>
+
+  <h2>Inventory</h2>
+  <p>Web (inventory.huian.us), Android and iOS. Inventory is a personal tracker restricted to a single owner account.</p>
+  <h3>What it collects</h3>
+  <ul>
+    <li><strong>Google account details.</strong> Signing in with Google shares your name, email address and profile photo with the app through Firebase Authentication. These are used only to check who is signing in. Only the owner's account is allowed in; any other account is signed out immediately, but Firebase still keeps a record of the sign-in attempt (email address and time). Ask us to delete it using the contact below.</li>
+    <li><strong>Your inventory.</strong> The containers, items, names, notes and locations you enter are stored in Google Firebase Realtime Database so they sync between your devices. Database rules block access to everyone except the owner's verified account.</li>
+    <li><strong>Camera.</strong> The camera is used to scan QR labels and to take a photo of an item you want identified. QR scanning happens on your device.</li>
+    <li><strong>Settings.</strong> Preferences such as sort order and layout are stored on your device only.</li>
+  </ul>
+  <h3>Optional AI features</h3>
+  <p>AI search and AI item identification run only when you choose the AI option. When you do:</p>
+  <ul>
+    <li>AI search sends your search text and your inventory list to Google's Gemini API through Firebase AI Logic.</li>
+    <li>AI identification sends the photo you took to the same service. The app does not save the photo.</li>
+    <li>On supported devices you can pick the on-device option instead (Gemini Nano on Android, Apple Intelligence on iOS). On-device processing keeps the data on your device.</li>
+  </ul>
+  <p>To prevent abuse of these features, Firebase App Check (reCAPTCHA Enterprise on the web) sends Google technical signals about your browser or device to confirm requests come from the real app.</p>
+
+  <h2>ClipShare</h2>
+  <p class="warn"><strong>ClipShare is a public shared clipboard.</strong> Text and files you post can be seen, downloaded and deleted by anyone who opens ClipShare. Don't post passwords or anything private.</p>
+  <ul>
+    <li>No account or sign-in is needed, and no personal details are collected.</li>
+    <li>Text is stored in Google Firebase Realtime Database. Files (up to 50 MB) are stored in Supabase Storage.</li>
+    <li>Posts stay until someone deletes them with the delete button.</li>
+    <li>ClipShare reads your clipboard only when you tap paste, and writes to it only when you tap copy.</li>
+  </ul>
+
+  <h2>Display Board, Android Interview Prep and Speak Spanish</h2>
+  <ul>
+    <li>Display Board shows your message on your own screen. Nothing you type is sent anywhere.</li>
+    <li>Android Interview Prep and Speak Spanish save your daily streak in your browser's local storage. It never leaves your device, and clearing your browser data removes it.</li>
+    <li>Speak Spanish links to YouTube. Once you follow a link, YouTube's own privacy policy applies.</li>
+  </ul>
+
+  <h2>Services we rely on</h2>
+  <p>These providers process data on our behalf, only to run the apps:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Provider</th><th>Used for</th><th>Policy</th></tr></thead>
+      <tbody>
+        <tr><td>Google Firebase</td><td>Sign-in, database, App Check, AI features</td><td><a href="https://firebase.google.com/support/privacy" rel="noopener">firebase.google.com/support/privacy</a></td></tr>
+        <tr><td>Google Gemini API</td><td>Optional AI search and identification</td><td><a href="https://policies.google.com/privacy" rel="noopener">policies.google.com/privacy</a></td></tr>
+        <tr><td>Supabase</td><td>ClipShare file storage</td><td><a href="https://supabase.com/privacy" rel="noopener">supabase.com/privacy</a></td></tr>
+        <tr><td>GitHub Pages</td><td>Hosting this website</td><td><a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub Privacy Statement</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Like any website host, GitHub Pages and the script CDNs our pages load from (Google and jsDelivr) receive your IP address and browser details when you visit, and may keep them briefly in server logs for security.</p>
+
+  <h2>Deleting your data</h2>
+  <ul>
+    <li><strong>Inventory:</strong> delete any item or container in the app. To delete a sign-in record or all data, email us and we'll remove it within 30 days.</li>
+    <li><strong>ClipShare:</strong> use the delete button on any post.</li>
+    <li><strong>Local data:</strong> clear your browser's site data, or uninstall the app.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>These apps are not directed at children under 13, and we do not knowingly collect personal information from them. If you believe a child has provided personal information, contact us and we'll delete it.</p>
+
+  <h2>Security</h2>
+  <p>Data is sent over encrypted HTTPS connections. Inventory data is protected by server-side rules that allow only the owner's verified account. ClipShare is public by design, as described above.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>When an app changes what it collects, this page is updated and the effective date above changes with it.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or deletion requests: <a href="mailto:hui@huian.us">hui@huian.us</a></p>
+
+  <footer>huian.us</footer>
+</div>
+</body>
+</html>
