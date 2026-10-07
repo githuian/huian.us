@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Android Interview Prep</title>
+<meta name="description" content="A new senior Android technical question and behavioral question every day." />
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e2229;
+    --border: #2a2f3a;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --accent: #5b9dff;
+    --accent-2: #34d399;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --panel-2: #f0f1f4;
+      --border: #e1e4ea;
+      --text: #1a1d23;
+      --muted: #5f6673;
+      --accent: #2f6fed;
+      --accent-2: #0f9d68;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px 64px;
+    padding-top: calc(40px + env(safe-area-inset-top, 0px));
+  }
+  .wrap { width: 100%; max-width: 640px; }
+
+  .top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  a.home {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  a.home:hover { color: var(--accent); }
+
+  h1 { font-size: 1.5rem; margin: 10px 0 4px; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 20px; }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .pill {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .pill b { color: var(--text); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .tag.tech { background: rgba(91,157,255,0.15); color: var(--accent); }
+  .tag.behavior { background: rgba(52,211,153,0.15); color: var(--accent-2); }
+
+  .question {
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 16px;
+  }
+
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:active { transform: scale(0.98); }
+  .card.tech .btn.reveal { border-color: var(--accent); color: var(--accent); }
+  .card.behavior .btn.reveal { border-color: var(--accent-2); color: var(--accent-2); }
+
+  .answer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    display: none;
+  }
+  .answer.shown { display: block; }
+  .answer h3 {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .answer ul {
+    margin: 0;
+    padding-left: 1.1em;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .answer li { margin-bottom: 6px; }
+  .answer li:last-child { margin-bottom: 0; }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: center;
+    margin-top: 28px;
+  }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="home" href="/">&larr; huian.us</a>
+    <span class="pill" id="streak"></span>
+  </div>
+
+  <h1>Android Interview Prep</h1>
+  <p class="sub">One senior-level technical question and one behavioral question, every day.</p>
+
+  <div class="meta">
+    <span class="pill" id="dayInfo"></span>
+  </div>
+
+  <div class="card tech">
+    <span class="tag tech">Technical</span>
+    <p class="question" id="techQ"></p>
+    <button class="btn reveal" id="techBtn">Show answer</button>
+    <div class="answer" id="techA">
+      <h3>Model answer</h3>
+      <ul id="techAList"></ul>
+    </div>
+  </div>
+
+  <div class="card behavior">
+    <span class="tag behavior">Behavioral</span>
+    <p class="question" id="behQ"></p>
+    <button class="btn reveal" id="behBtn">Show answer</button>
+    <div class="answer" id="behA">
+      <h3>What a strong answer covers</h3>
+      <ul id="behAList"></ul>
+    </div>
+  </div>
+
+  <footer>
+    Questions rotate automatically at midnight (your local time) through a bank of
+    <span id="techCount"></span> technical and <span id="behCount"></span> behavioral questions.
+    Come back tomorrow for a new pair.<br>
+    Behavioral prompts don't have one right answer &mdash; the reveal is a STAR-style
+    framework for what a strong answer touches on, not a script to memorize.
+  </footer>
+</div>
+
+<script>
+const TECH = [
+{ q: `Explain structured concurrency in Kotlin coroutines. How does cancellation propagate through a CoroutineScope?`,
+  a: [
+  `Every coroutine is launched inside a scope tied to a Job; children are attached to their parent's Job, forming a tree.`,
+  `Cancelling a parent Job cancels all its children recursively — cancellation is cooperative, delivered via CancellationException at the next suspension point.`,
+  `A scope only completes once all its children complete, so structured concurrency prevents "leaked" coroutines outliving the component that started them.`,
+  `In Android, viewModelScope / lifecycleScope are tied to component lifecycles so work is auto-cancelled on destroy.`,
+  `Cancellation doesn't stop a coroutine inside a tight non-suspending loop — you must check isActive or call ensureActive() / yield().`
+]},
+{ q: `What's the difference between launch and async, and when would you use each?`,
+  a: [
+  `launch returns a Job and is fire-and-forget — used for side effects where you don't need a result.`,
+  `async returns a Deferred<T>; calling await() retrieves the result and rethrows any exception.`,
+  `Use async when you need to run multiple operations concurrently and combine their results (e.g. two network calls in parallel).`,
+  `An uncaught exception in launch propagates immediately to the parent/scope; in async it's held until await() is called (unless using supervisorScope).`,
+]},
+{ q: `Compare Flow and LiveData. When would you still reach for LiveData in a modern codebase?`,
+  a: [
+  `Flow is a Kotlin coroutines construct, lifecycle-agnostic by itself, supports operators (map, debounce, flatMapLatest, etc.) and backpressure strategies.`,
+  `LiveData is lifecycle-aware out of the box and automatically unsubscribes on destroy, but has a limited operator set and no coroutine integration.`,
+  `StateFlow + repeatOnLifecycle(Lifecycle.State.STARTED) gives Flow the same lifecycle safety LiveData has, making LiveData largely unnecessary in new code.`,
+  `LiveData may still show up for interop with older Java code or libraries that expose it, or in very small screens where pulling in Flow collection boilerplate isn't worth it.`,
+]},
+{ q: `What's the difference between hot and cold flows? Give an example of each.`,
+  a: [
+  `Cold flows (built with flow{} / flowOf) start producing values only when collected, and each collector gets its own independent execution — e.g. a Flow wrapping a Room query or network call.`,
+  `Hot flows (StateFlow, SharedFlow, Channel-backed flows) produce values independent of collectors; collectors just observe whatever is currently flowing, and multiple collectors share the same upstream emissions.`,
+  `StateFlow always has a current value and replays it to new collectors; SharedFlow is configurable (replay count, buffer) and has no required initial value.`,
+]},
+{ q: `Explain the differences between StateFlow, SharedFlow, and Channel.`,
+  a: [
+  `StateFlow: always holds a current value, conflates (only latest value matters), great for UI state.`,
+  `SharedFlow: more general hot stream, configurable replay/buffer, good for one-off events broadcast to multiple collectors (though single-event handling needs care to avoid redelivery on config change).`,
+  `Channel: single-consumer, values are consumed once and removed — good for work-queue-like communication between coroutines, not for state multiple observers need to see.`,
+  `A common pitfall is using LiveData/SharedFlow for "events" and getting duplicate delivery after rotation — Channel or a one-shot event wrapper avoids that.`,
+]},
+{ q: `How does Flow handle backpressure? Explain buffer, conflate, and collectLatest.`,
+  a: [
+  `buffer() lets the producer run ahead of a slow collector, queuing values up to a capacity instead of suspending the producer.`,
+  `conflate() drops intermediate values if the collector is slow, keeping only the latest — good for UI state where only the newest value matters.`,
+  `collectLatest cancels the previous collector block when a new value arrives, useful when the collector itself does slow work that should be abandoned for fresher data.`,
+  `Choosing between them is about whether you need every value (buffer), only the newest value (conflate), or need to abandon in-flight work on new values (collectLatest/flatMapLatest).`,
+]},
+{ q: `How do you handle exceptions in coroutines? Explain SupervisorJob and CoroutineExceptionHandler.`,
+  a: [
+  `A regular Job cancels all siblings when one child fails; SupervisorJob isolates failures so one child's exception doesn't cancel its siblings.`,
+  `CoroutineExceptionHandler is a last-resort handler installed on a scope's context for uncaught exceptions from launch — it does not catch exceptions from async (those surface at await()).`,
+  `Prefer structured try/catch at the point you can meaningfully handle an error over relying solely on a global handler.`,
+  `viewModelScope uses a regular Job internally, so an unhandled exception in one launched coroutine can cancel the whole scope unless you isolate with supervisorScope or your own SupervisorJob.`,
+]},
+{ q: `What are Dispatchers.IO, Default, and Main backed by, and how do you choose?`,
+  a: [
+  `Main dispatches to the Android main/UI thread — required for UI updates.`,
+  `Default is backed by a thread pool sized to CPU cores, for CPU-bound work (parsing, sorting, computation).`,
+  `IO is backed by a larger, elastic thread pool tuned for blocking I/O (network, disk, database) that spends most of its time waiting.`,
+  `Dispatchers.IO and Default share an underlying pool design (limited parallelism) to avoid unbounded thread creation; withContext switches dispatcher for just that block.`,
+]},
+{ q: `How does Android decide which app processes to kill under memory pressure, and what does that mean for your app's design?`,
+  a: [
+  `Each process is assigned an importance level (foreground, visible, service, cached, etc.) and the low-memory killer reclaims cached/background processes first.`,
+  `A backgrounded app can be killed at any time without onDestroy guarantees — you can't rely on cleanup code running.`,
+  `State that must survive process death (not just rotation) needs to go through SavedStateHandle / persistent storage, not just in-memory ViewModel state.`,
+  `Foreground services and visible activities are deprioritized for killing, which is why long-running work that must survive should use a foreground service or WorkManager rather than hoping the process stays alive.`,
+]},
+{ q: `What causes an ANR (Application Not Responding), and how would you diagnose and prevent one?`,
+  a: [
+  `ANRs fire when the main thread is blocked beyond a threshold (~5s for input dispatch, shorter for some broadcast/service callbacks).`,
+  `Common causes: synchronous disk/network/database calls on the main thread, heavy computation in onCreate/onResume, deadlocks, or a broadcast receiver doing slow work.`,
+  `Diagnose with Android Studio Profiler/Perfetto traces, ANR traces in /data/anr, and StrictMode during development to flag disk/network on main thread.`,
+  `Prevent by moving blocking work off the main thread (coroutines with Dispatchers.IO), using WorkManager for long tasks, and keeping lifecycle callbacks lightweight.`,
+]},
+{ q: `Give a high-level explanation of Binder IPC and why it matters for Android app architecture.`,
+  a: [
+  `Binder is the kernel driver + framework mechanism Android uses for inter-process communication, underlying things like calling into system services (ActivityManager, PackageManager) and bound Services/AIDL.`,
+  `Calls across process boundaries are inherently more expensive (serialization, context switch) than in-process calls, and have payload size limits (~1MB per transaction shared across the whole process).`,
+  `Explains why passing large data (e.g. big Bitmaps) via Intent extras or AIDL can throw TransactionTooLargeException.`,
+  `Most app developers don't touch Binder directly, but understanding it clarifies why cross-process communication (multi-process apps, content providers, bound services) has real overhead and limits.`,
+]},
+{ q: `How does ViewModel survive configuration changes, and how is that different from surviving process death? Where does SavedStateHandle fit in?`,
+  a: [
+  `ViewModel instances are retained across configuration changes by the ViewModelStore, which the Activity/Fragment hands off across recreation — no serialization involved, just the same object reference.`,
+  `Process death (e.g. backgrounded and killed for memory) destroys the ViewModel entirely; on recreation a brand-new ViewModel is created.`,
+  `SavedStateHandle persists small amounts of state (bundled, like onSaveInstanceState) that survives process death, injected into the ViewModel so it can restore critical UI state after a cold recreation.`,
+  `Large or non-serializable state should still live in a repository/database, not SavedStateHandle, which is meant for small UI state like scroll position or a form field.`,
+]},
+{ q: `What triggers recomposition in Jetpack Compose, and how do you avoid unnecessary recompositions?`,
+  a: [
+  `Recomposition is triggered when a State object read inside a composable changes; Compose re-executes only the composables that actually read that state (smart recomposition).`,
+  `Unstable parameter types (e.g. a plain List, or a lambda capturing changing state) can defeat skipping and cause wider-than-needed recomposition — stable/immutable types (data classes with val, ImmutableList) help the compiler skip.`,
+  `remember{} caches a value across recompositions; derivedStateOf avoids recomputing/recomposing when a derived value hasn't actually changed even though its inputs did.`,
+  `Lifting state only as high as needed, and passing stable lambdas (remembered, not recreated each recomposition) reduces the surface that recomposes.`,
+]},
+{ q: `Explain remember, rememberSaveable, and derivedStateOf — when do you use each?`,
+  a: [
+  `remember{} caches a computed value across recompositions but loses it on configuration change / process death.`,
+  `rememberSaveable survives configuration changes (and simple process death) by saving into the same Bundle mechanism as onSaveInstanceState, for small UI state like a text field value.`,
+  `derivedStateOf wraps a computation that depends on other State, recomputing only when the inputs actually change, and — critically — only triggers recomposition of readers when the derived result itself changes, not on every input change.`,
+]},
+{ q: `Explain Compose's side-effect APIs: LaunchedEffect, SideEffect, and DisposableEffect.`,
+  a: [
+  `LaunchedEffect runs a coroutine tied to the composition, restarting when its keys change and cancelling when it leaves composition — used for suspend calls triggered by composition.`,
+  `DisposableEffect is for effects that need explicit cleanup (listeners, callbacks) — it has an onDispose block guaranteed to run when leaving composition or when keys change.`,
+  `SideEffect runs on every successful recomposition, used to publish Compose state out to non-Compose code (e.g. updating an analytics property) without needing cleanup.`,
+  `Picking the wrong one is a common bug source — e.g. registering a listener in LaunchedEffect without proper disposal leaks it.`,
+]},
+{ q: `What is state hoisting in Compose and why is it preferred?`,
+  a: [
+  `State hoisting means moving state out of a composable and up to its caller, making the composable stateless and controlled via parameters + a callback (value, onValueChange).`,
+  `It makes composables reusable, testable in isolation, and lets a single source of truth (often a ViewModel) own state instead of it being scattered across the UI tree.`,
+  `The pattern mirrors "controlled components" in other UI frameworks — hoist only as far as needed, not necessarily all the way to the top.`,
+]},
+{ q: `What is CompositionLocal, and when should you avoid it?`,
+  a: [
+  `CompositionLocal implicitly passes data down the composition tree without explicit parameters — used by Compose itself for things like LocalContext, theming (colors/typography).`,
+  `It's convenient for cross-cutting concerns (theme, layout direction) but makes data flow implicit, harder to trace, and harder to test/preview since callers can't see the dependency.`,
+  `Avoid it for regular business/UI state that should just be passed as parameters — overusing CompositionLocal recreates a hidden global-state problem.`,
+]},
+{ q: `What are the major performance tradeoffs between Jetpack Compose and the classic View system?`,
+  a: [
+  `Compose avoids View's measure/layout/draw inflation and findViewById overhead, and its smart recomposition can skip subtrees that didn't change — often more efficient for complex, frequently-updating UI.`,
+  `Views benefit from decades of optimization and tools (RecyclerView view recycling) and have more predictable, well-understood performance characteristics for simple static layouts.`,
+  `Compose performance is sensitive to stability of parameters and lambda allocation — a poorly structured Compose screen can recompose far more than a straightforward View equivalent.`,
+  `Interop (AndroidView/ComposeView) has a real cost at the boundary, so mixed Compose/View screens should minimize crossing back and forth.`,
+]},
+{ q: `How does RecyclerView achieve efficient scrolling, and what does DiffUtil add on top?`,
+  a: [
+  `RecyclerView recycles ViewHolders instead of inflating a new View per row, reusing off-screen item views as new items scroll in.`,
+  `ViewHolder pattern avoids repeated findViewById calls by caching view references.`,
+  `DiffUtil computes the minimal set of insert/remove/move operations between two list versions (via a diffing algorithm) so you can call notifyItem* instead of notifyDataSetChanged, enabling fine-grained animations and avoiding full re-binds.`,
+  `ListAdapter wraps DiffUtil with background-thread diffing via AsyncListDiffer for large lists.`,
+]},
+{ q: `What are the most common causes of memory leaks in Android, and how do you track one down?`,
+  a: [
+  `Static references to Activity/Context/View, non-static inner classes (including anonymous listeners) holding an implicit outer reference, and long-lived Handlers/Threads/callbacks that outlive the component that registered them.`,
+  `Singletons holding an Activity Context instead of Application Context are a classic leak.`,
+  `Track down with LeakCanary (automated, flags retained objects after destroy) or by capturing a heap dump in Android Studio Profiler and following the "retained size" / reference path to GC roots.`,
+  `Fix patterns: use Application context for long-lived singletons, unregister listeners/callbacks in onDestroy/onCleared, use WeakReference for callbacks that must reference a short-lived component.`,
+]},
+{ q: `Why is WeakReference commonly used with Handler-based code, and what's the modern alternative?`,
+  a: [
+  `A Handler posted with a delay holds a strong reference to its enclosing class; if that's an Activity and it's destroyed before the message fires, the Activity leaks until the message runs.`,
+  `Wrapping the outer reference in a WeakReference inside a static Handler subclass avoids keeping the Activity alive artificially.`,
+  `Modern alternative: use lifecycleScope.launch { delay(...) ; ... } with coroutines, which is automatically cancelled when the lifecycle is destroyed — no manual weak-reference bookkeeping needed.`,
+]},
+{ q: `Explain Dagger/Hilt scopes and how the component hierarchy maps to Android components.`,
+  a: [
+  `Hilt generates components mirroring Android's lifecycle: SingletonComponent (app-wide), ActivityRetainedComponent, ActivityComponent, FragmentComponent, ViewModelComponent, etc.`,
+  `A scope annotation (@Singleton, @ActivityScoped, @ViewModelScoped) ties a binding's instance lifetime to the corresponding component — one instance is shared for the life of that component.`,
+  `Unscoped bindings create a new instance every injection; scoping is a deliberate choice, not a default, since over-scoping can itself cause leaks (holding activity-scoped data too long).`,
+  `Child components can access bindings from parent components but not vice versa, which is why you sometimes need @InstallIn at a higher component than you'd expect.`,
+]},
+{ q: `Compare compile-time DI (Dagger/Hilt) with reflection/service-locator style DI (e.g. Koin). What are the tradeoffs?`,
+  a: [
+  `Dagger/Hilt generates dependency graphs at compile time via annotation processing — errors (missing bindings, cycles) are caught at build time, with decent runtime performance since there's no reflection.`,
+  `Koin resolves dependencies at runtime via a DSL-based graph, which is simpler to set up and more Kotlin-idiomatic, but misconfigurations surface as runtime crashes, and resolution has some runtime cost.`,
+  `Dagger/Hilt has a steeper learning curve and more generated boilerplate/build time; Koin trades some safety and performance for simplicity and faster iteration, which can matter more for small/medium apps.`,
+]},
+{ q: `What are the benefits of a multi-module Gradle architecture, and what are the pitfalls?`,
+  a: [
+  `Enables parallel/incremental builds (Gradle only rebuilds affected modules), enforces architectural boundaries (feature modules can't reach into each other's internals), and allows dynamic feature delivery.`,
+  `Enables better build caching and, in large teams, lets different teams own different modules with clearer ownership and faster CI for unrelated changes.`,
+  `Pitfalls: over-modularization adds configuration overhead and can slow builds if module boundaries are too fine-grained or have excessive inter-module API surface; getting the dependency direction wrong recreates a monolith with extra ceremony.`,
+]},
+{ q: `What techniques reduce Android app startup time?`,
+  a: [
+  `Baseline Profiles pre-compile hot code paths (via AOT) so they don't pay JIT/interpreter cost on first runs.`,
+  `Defer non-critical initialization (analytics SDKs, feature flags) using App Startup library or lazy initialization instead of doing everything in Application.onCreate.`,
+  `Avoid heavy work in ContentProviders that run before Application.onCreate, and watch for expensive static initializers.`,
+  `Measure with Macrobenchmark to get real cold/warm/hot startup numbers rather than guessing.`,
+]},
+{ q: `What do Macrobenchmark and Baseline Profiles actually measure/do, and how do they work together?`,
+  a: [
+  `Macrobenchmark is a Jetpack test library that measures real-world metrics like startup time and jank on an actual (or emulated) device, driven by instrumented test code.`,
+  `Baseline Profiles are a list of classes/methods to be ahead-of-time compiled, generated by running representative user journeys and recording what gets JIT-compiled.`,
+  `Workflow: use Macrobenchmark to establish a baseline, generate a Baseline Profile for critical journeys (startup, main scroll), ship it in the app bundle, then use Macrobenchmark again to verify the improvement.`,
+]},
+{ q: `When would you use WorkManager vs a Foreground Service vs AlarmManager?`,
+  a: [
+  `WorkManager is for deferrable, guaranteed background work (sync, upload) that should survive process death/reboot and respects system battery optimizations — it internally picks JobScheduler/AlarmManager/a background thread depending on API level and constraints.`,
+  `A Foreground Service is for user-visible, immediate, ongoing work the user is actively aware of (music playback, navigation, an active call) — it requires a persistent notification and has stricter background-start restrictions on modern Android.`,
+  `AlarmManager is for precise-time wake-ups (exact alarms) where WorkManager's flexible scheduling isn't acceptable — but exact alarms are increasingly gated behind special permissions on newer Android versions.`,
+]},
+{ q: `How does the Activity lifecycle differ when your app supports multi-window or Picture-in-Picture mode?`,
+  a: [
+  `Multiple activities can be visible-but-not-focused simultaneously in multi-window/freeform/PiP, so "onResume = has focus" assumptions break — onResume can fire without full focus, and onPause doesn't necessarily mean fully backgrounded.`,
+  `PiP mode uses onPictureInPictureModeChanged to let you adjust UI (hide controls, simplify layout) for the small window.`,
+  `Configuration changes (size/multi-window mode changes) happen more frequently and can occur without a full recreate if handled via onMultiWindowModeChanged, so state preservation logic needs to be robust to more frequent, partial lifecycle transitions.`,
+]},
+{ q: `What's the difference between Application context and Activity context, and why does it matter for leaks?`,
+  a: [
+  `Activity context is tied to the Activity's lifecycle and carries theming/display info specific to that Activity; Application context lives as long as the process.`,
+  `Passing an Activity context into something long-lived (a singleton, a static field, a retained listener) keeps that Activity from being garbage collected even after it's destroyed — a classic leak.`,
+  `Use Application context for anything that outlives a single screen (e.g. a database/network singleton), and Activity context only for things genuinely scoped to that screen (inflating themed views, showing a dialog).`,
+]},
+{ q: `How do Room migrations work, and what happens if you get one wrong?`,
+  a: [
+  `Room generates a schema version per @Database version; a Migration object defines the exact SQL to transform the old schema into the new one for a specific version pair.`,
+  `Room validates the resulting schema against what your annotated entities expect after migration — a mismatch throws an IllegalStateException at runtime during development.`,
+  `Missing a migration path (or using fallbackToDestructiveMigration carelessly) wipes user data on upgrade — exportSchema + stored schema JSON files let you test migrations against real prior schemas in instrumented tests.`,
+]},
+{ q: `Explain MVI (unidirectional data flow) vs MVVM. What problem does MVI solve that MVVM alone doesn't?`,
+  a: [
+  `MVVM typically exposes multiple independent streams (several LiveData/StateFlow fields) that the View combines, which can lead to inconsistent intermediate UI states if they update independently.`,
+  `MVI models the entire screen as a single immutable State object plus a stream of Intents/Actions that reducers turn into new State — the UI only ever renders one consistent snapshot.`,
+  `This makes state transitions explicit, testable (pure reducer functions), and debuggable (you can log/replay the Intent → State sequence), at the cost of more boilerplate for simple screens.`,
+]},
+{ q: `Why are sealed classes/interfaces commonly used to model UI state?`,
+  a: [
+  `A sealed hierarchy (Loading / Success(data) / Error(message)) makes the set of possible states exhaustive and closed, so the compiler forces a when branch for every case — no silently unhandled state.`,
+  `It avoids "impossible state" bugs common with multiple nullable/boolean flags (e.g. isLoading=true and error!=null at the same time, which shouldn't both be representable).`,
+  `Pairs naturally with Compose/MVI, where rendering is just a when-exhaustive mapping from State to UI.`,
+]},
+{ q: `Describe the Android testing pyramid. When do you use a fake vs a mock?`,
+  a: [
+  `Unit tests (JVM, fast, no device) form the base — testing ViewModels, use cases, reducers with JUnit/Mockito/Turbine for Flow.`,
+  `Instrumented/integration tests run on a device/emulator (Room DB, actual framework classes) — fewer, slower, higher confidence than pure unit tests.`,
+  `UI tests (Espresso for Views, Compose Test Rule for Compose) sit at the top — fewest, slowest, test real user flows end-to-end.`,
+  `Fakes (a lightweight in-memory real implementation, e.g. a fake repository backed by a Map) are preferred for state-heavy collaborators because they behave like the real thing; mocks are better for verifying interactions (e.g. "analytics.track was called once") where you don't need real behavior.`,
+]},
+{ q: `How do you unit test coroutines? Explain TestDispatcher and runTest.`,
+  a: [
+  `runTest{} runs the test body in a controlled TestScope using a virtual-time scheduler, so delay() calls resolve instantly instead of actually waiting.`,
+  `StandardTestDispatcher queues coroutines and requires advanceUntilIdle()/runCurrent() to execute them, giving fine control over ordering; UnconfinedTestDispatcher runs eagerly, closer to "just execute immediately."`,
+  `Inject dispatchers (don't hardcode Dispatchers.Main/IO in production code) so tests can substitute a TestDispatcher — typically via a DispatcherProvider abstraction.`,
+  `For Main dispatcher specifically, Dispatchers.setMain(testDispatcher) in setup / Dispatchers.resetMain() in teardown is the standard pattern.`,
+]},
+{ q: `What are the key Android security practices around storing sensitive data and network calls?`,
+  a: [
+  `Use EncryptedSharedPreferences or the Jetpack Security library for small sensitive values; use the Android Keystore for cryptographic keys so private key material never leaves secure hardware when available.`,
+  `Use HTTPS everywhere, and consider certificate pinning for high-sensitivity apps to defend against compromised/rogue CAs — with a plan to rotate pins before certs expire.`,
+  `Avoid logging sensitive data, strip debug logs in release builds, and use R8/ProGuard plus code obfuscation to raise the bar for reverse engineering (not a substitute for server-side authorization).`,
+  `Validate and sanitize anything coming from Intents/deep links/clipboard — don't trust implicit-intent-delivered data the way you'd trust in-process data.`,
+]},
+{ q: `What pitfalls can R8/ProGuard shrinking and obfuscation introduce, and how do you guard against them?`,
+  a: [
+  `Code that's accessed via reflection (some serialization libraries, DI frameworks, WebView JS interfaces) can be stripped or renamed, causing runtime crashes that only show up in release builds.`,
+  `Guard with explicit -keep rules for reflectively-accessed classes, and consumer ProGuard rules shipped by libraries (most modern libraries ship their own rules, but custom reflection code needs manual rules).`,
+  `Always test release/minified builds (not just debug) before shipping, ideally in CI, since shrinking-related bugs don't appear in debug builds at all.`,
+]},
+{ q: `What techniques reduce APK/AAB size?`,
+  a: [
+  `Publish as an Android App Bundle so Google Play generates device-specific split APKs (density/ABI/language) instead of one fat APK.`,
+  `Enable resource shrinking and code shrinking (R8) to strip unused resources/code; use vector drawables instead of multiple density-specific PNGs.`,
+  `Use on-demand/dynamic feature modules for rarely-used features so they're downloaded only when needed.`,
+  `Audit large dependencies and prefer ones with smaller footprints; avoid bundling unused language resources (resourceConfigurations).`,
+]},
+{ q: `What are Doze mode and App Standby Buckets, and how should you design background work around them?`,
+  a: [
+  `Doze restricts network access, wakelocks, and job/alarm execution for a device that's stationary and screen-off for a while, batching deferred work into periodic maintenance windows.`,
+  `App Standby Buckets (active, working set, frequent, rare, restricted) throttle how often an app's jobs/alarms/FCM messages can run based on how recently/often the user engages with it.`,
+  `Design implication: don't assume timely delivery of background work — use WorkManager's constraint-based scheduling (which is Doze-aware) rather than fighting the system with wakelocks, and use high-priority FCM messages sparingly for truly time-sensitive updates.`,
+]},
+{ q: `How do notification channels work on Android 8+, and why do they matter for user trust?`,
+  a: [
+  `Every notification must belong to a channel, and importance (urgency/sound/visual treatment) is set per-channel, not per-notification, from Android 8 onward.`,
+  `Once created, a channel's importance can't be changed by the app — only the user can change it in system settings — so channel design (how granular, what defaults) is a one-way decision to get right upfront.`,
+  `Splitting channels by purpose (e.g. "Messages" vs "Promotions") lets users mute noisy categories without disabling notifications entirely, which reduces the chance they disable notifications for your app altogether.`,
+]},
+{ q: `What changed with scoped storage (Android 10/11+), and how do you handle file access now?`,
+  a: [
+  `Apps can no longer freely access arbitrary paths on external storage; each app gets an app-specific directory plus access to its own media via MediaStore, without needing broad storage permissions.`,
+  `Accessing other apps' files or shared user-generated content (downloads, documents) goes through the Storage Access Framework (SAF) / MediaStore APIs with user-granted, per-file or per-tree access.`,
+  `Legacy apps relying on broad WRITE_EXTERNAL_STORAGE access need migration — requestLegacyExternalStorage was a temporary opt-out, now removed in later API levels, making MediaStore/SAF adoption mandatory.`,
+]},
+{ q: `How does Paging3 help with large lists, and what are its main components?`,
+  a: [
+  `PagingSource defines how to load a page of data (from network, DB, or both) given a key; PagingData streams pages to the UI as a Flow/LiveData.`,
+  `RemoteMediator coordinates between a local cache (e.g. Room) and a remote source for a single source of truth, offline-first paging experience — loading more from network only when the local cache runs out.`,
+  `Pager ties it together and exposes PagingData which a PagingDataAdapter (RecyclerView) or LazyPagingItems (Compose) consumes, handling loading/error states per page automatically.`,
+]},
+{ q: `Briefly describe the View system's measure/layout/draw passes.`,
+  a: [
+  `Measure: each View is asked how big it wants to be given constraints from its parent (MeasureSpec), bottom-up then top-down for ViewGroups resolving children.`,
+  `Layout: parents assign final position/size to each child based on measured sizes.`,
+  `Draw: Views render their content to a Canvas, traversing the tree in order (parents draw backgrounds before children draw on top).`,
+  `Triggering requestLayout() forces measure+layout again (expensive); invalidate() only forces a redraw — knowing the difference matters for custom View performance.`,
+]},
+{ q: `What is the "16ms frame budget" and what commonly causes jank?`,
+  a: [
+  `For a 60Hz display, the system targets producing a new frame every ~16.6ms; missing that deadline means a dropped/janky frame, perceptible as stutter (on 90/120Hz displays the budget is even tighter).`,
+  `Common causes: heavy work on the main thread during a frame (layout thrashing, large bitmap decode/scaling, GC pauses from excess allocation, synchronous I/O), or overly complex view hierarchies/overdraw.`,
+  `Diagnose with Android Studio Profiler's frame timeline or Perfetto/systrace to see which phase (input, animation, measure/layout, draw, sync, GPU) is over budget.`,
+]},
+{ q: `What are common Compose performance pitfalls around lambdas and parameter stability?`,
+  a: [
+  `Passing a lambda that captures changing state creates a new lambda instance every recomposition unless remembered, which can defeat skipping for composables that take it as a parameter.`,
+  `Passing unstable types (plain mutable List, classes with var properties, classes Compose can't prove are stable) as parameters forces recomposition of that composable even when the actual content didn't change.`,
+  `Fixes: use remember/rememberUpdatedState for callbacks where appropriate, prefer immutable data classes/kotlinx.collections.immutable types for list parameters, and use the Compose compiler's stability/metrics reports to find unstable classes.`,
+]},
+{ q: `Describe an offline-first architecture using the single-source-of-truth pattern.`,
+  a: [
+  `The local database (e.g. Room) is the single source of truth the UI observes; the UI never talks to the network directly.`,
+  `A repository synchronizes remote data into the local DB (on demand, via WorkManager periodic sync, or RemoteMediator for paged data); the UI keeps working from cached data even when offline.`,
+  `Writes typically go local-first (optimistic update) then sync to the server, with a strategy for conflict resolution and retry on failure.`,
+  `This decouples UI responsiveness from network reliability/latency and gives a natural caching layer for free.`,
+]},
+{ q: `What causes TransactionTooLargeException and how do you avoid it?`,
+  a: [
+  `Binder IPC transactions (passing data via Intent extras, across process bound services/AIDL) share a per-process buffer with a strict limit (historically ~1MB), and exceeding it throws TransactionTooLargeException.`,
+  `Common trigger: passing a large Bitmap or large list of Parcelables directly through an Intent (e.g. starting an Activity, or restoring saved instance state after process death with large extras).`,
+  `Avoid by passing a reference (URI, file path, database ID) instead of raw large data, or using a shared cache/ContentProvider to hand off big payloads between components.`,
+]},
+{ q: `How does the "by viewModels()" Kotlin property delegate work under the hood?`,
+  a: [
+  `It's a lazy delegate that, on first access, asks a ViewModelProvider (backed by the Activity/Fragment's ViewModelStore and a Factory) for an instance of the requested ViewModel class, caching it for subsequent access.`,
+  `The Factory is responsible for actual construction, which is how Hilt/Dagger hooks in (HiltViewModel generates a Factory that resolves constructor dependencies from the graph).`,
+  `Because it's backed by ViewModelStore, the same instance is returned across configuration changes without re-invoking the factory.`,
+]},
+{ q: `How does Navigation Compose differ from the legacy Fragment-based Navigation component?`,
+  a: [
+  `Navigation Compose defines a NavHost with composable destinations directly (no Fragments/XML nav graph), and navigation is driven by a NavController the same way, but destinations are just composable functions.`,
+  `Passing arguments is typically done via the route string/NavType rather than Fragment arguments bundles, though you can also pass complex objects via a shared ViewModel scoped to the nav graph.`,
+  `Deep links, nested graphs, and back stack management concepts carry over, but there's no FragmentManager/transaction overhead — transitions are just Compose animations (AnimatedContent / enterTransition/exitTransition).`,
+]},
+{ q: `What is Kotlin Multiplatform (KMP), and what are the tradeoffs of sharing business logic across Android and iOS?`,
+  a: [
+  `KMP compiles shared Kotlin code to JVM bytecode for Android and native binaries (via Kotlin/Native) for iOS, letting you share things like networking, data models, repositories, and business logic while keeping UI platform-native (or using Compose Multiplatform for shared UI too).`,
+  `Benefits: one implementation of complex business logic reduces duplicated bugs and speeds up feature parity between platforms.`,
+  `Tradeoffs: iOS interop has sharp edges (concurrency model differences, binary size, build tooling complexity, smaller community/library ecosystem than pure Android), and debugging across the Kotlin/Native boundary is harder than pure-platform code; it's a bigger investment that pays off more as shared-logic surface area grows.`,
+]},
+{ q: `How would you apply clean architecture layering to a single Android feature module?`,
+  a: [
+  `Presentation layer: Compose/View UI + ViewModel, owns UI state, talks only to the domain layer via use cases/interfaces — no knowledge of Retrofit/Room.`,
+  `Domain layer: plain Kotlin use cases and models with no Android/framework dependencies, defining repository interfaces — this layer is the most stable and most testable.`,
+  `Data layer: implements the domain's repository interfaces, owns Retrofit/Room/DataStore details and mapping between network/DB models and domain models.`,
+  `Dependencies point inward (data/presentation depend on domain, domain depends on nothing Android-specific), so domain logic can be unit tested without any framework/Android dependency, and swapping a data source doesn't touch presentation or domain code.`,
+]}
+];
+
+const BEHAVIOR = [
+{ q: `Tell me about a time you disagreed with a tech lead or PM on a technical decision.`,
+  a: [
+  `Set up the disagreement concretely: what was proposed, what you believed instead, and why (specific technical/product risk, not just preference).`,
+  `Show you sought to understand their constraints first before pushing back — disagreement framed as "here's data/a risk I don't think we've accounted for," not "you're wrong."`,
+  `Describe how you made your case (a prototype, a doc, a cost/benefit comparison) and how the decision actually got made — including if you lost the argument and committed anyway.`,
+  `Close with the outcome and, ideally, what changed about how the team makes that kind of decision afterward.`,
+]},
+{ q: `Describe a production incident you caused or were central to resolving. What changed afterward?`,
+  a: [
+  `Be specific and own it: what broke, how it was detected (crash reports, user reports, monitoring), and the actual user/business impact.`,
+  `Walk through triage and resolution — what you tried, what the real root cause turned out to be (often different from the first guess).`,
+  `Show blameless-postmortem thinking: what process/tooling gap let it ship (missing test, no staged rollout, no alert) rather than just "I was careless."`,
+  `Name the concrete follow-up (a new test, a canary rollout step, a monitor/alert) that makes the same class of bug harder to ship again.`,
+]},
+{ q: `How have you mentored a junior or mid-level engineer?`,
+  a: [
+  `Give a specific person/situation (anonymized) rather than a general philosophy — what were they struggling with (code quality, scope estimation, confidence)?`,
+  `Describe your actual mechanism: pairing, structured code review comments, stretch tasks, regular 1:1s — not just "I was available."`,
+  `Show you adapted your approach to the person (some need more structure, some need more autonomy with a safety net) rather than one-size-fits-all mentoring.`,
+  `Share a visible outcome — a skill they built, a project they later owned independently, feedback they gave you about the mentoring itself.`,
+]},
+{ q: `Tell me about a time you pushed back on an unrealistic deadline or scope.`,
+  a: [
+  `State the ask and why it was unrealistic in concrete terms (not "it felt rushed" — e.g. "the migration touched 40 call sites and we hadn't scoped the test burden").`,
+  `Show you brought options, not just objections: cut scope, phase the delivery, bring in help, or accept risk explicitly with stakeholders' eyes open.`,
+  `Describe the actual conversation with the stakeholder — how you communicated tradeoffs in terms they cared about (risk to launch, quality, team burnout) rather than pure engineering terms.`,
+  `End with what was actually delivered and whether the negotiated plan held up.`,
+]},
+{ q: `Describe driving a major technical migration (e.g., Java to Kotlin, Views to Compose, a DI framework swap).`,
+  a: [
+  `Explain the motivating problem clearly — why the migration was worth the cost (velocity, bugs, hiring, performance), not migration for its own sake.`,
+  `Describe the strategy for doing it incrementally/safely in a live codebase — module-by-module, feature-flagged, interop layers, rather than a risky big-bang rewrite.`,
+  `Mention how you got buy-in from the rest of the team and managed the shared cost (code review overhead, mixed-codebase confusion, onboarding docs).`,
+  `Share measurable outcomes if you have them (build time, crash rate, velocity) and what you'd do differently next time.`,
+]},
+{ q: `How do you balance paying down technical debt against shipping new features?`,
+  a: [
+  `Show you don't treat it as binary — most debt paydown is justified by a concrete cost it's imposing now (slow builds, recurring bug class, onboarding friction), not abstract "cleanliness."`,
+  `Describe a real mechanism you've used: a debt budget/percentage of sprint capacity, bundling debt paydown with a feature that touches that code anyway, or making the cost visible to product (e.g. "this bug class cost us N incidents this quarter").`,
+  `Give a concrete example where you made the call to prioritize (or deliberately defer) debt paydown and why, including how you justified it to non-engineers.`,
+]},
+{ q: `Tell me about a time your estimate for a project was significantly wrong.`,
+  a: [
+  `Be honest about the miss and the magnitude, and identify the real cause (unknown unknowns, underestimated integration/testing cost, scope creep) rather than blaming others.`,
+  `Describe how you communicated the slip as soon as you knew, rather than hiding it until the deadline.`,
+  `Explain what changed in how you estimate afterward — buffer for integration/testing, breaking work into smaller pieces, flagging unknowns explicitly up front.`,
+]},
+{ q: `Describe a time you had to make a significant decision with incomplete information.`,
+  a: [
+  `Frame the actual uncertainty — what you didn't know and why getting more information wasn't feasible in the available time.`,
+  `Show your reasoning process: what signals you did have, how you weighed the cost of being wrong against the cost of delay, and whether you chose a reversible option deliberately.`,
+  `Describe the outcome and, if it was wrong, how you detected that and course-corrected — comfort with being wrong and adjusting matters more than being right the first time.`,
+]},
+{ q: `How have you handled a teammate who wasn't pulling their weight?`,
+  a: [
+  `Show you investigated the root cause first (unclear expectations, personal issues, being stuck/blocked, skill gap) rather than assuming low effort.`,
+  `Describe the specific, direct conversation you had — framed around impact and expectations, not character judgments.`,
+  `Mention any support you offered (pairing, breaking down tasks, escalation path) and when/whether you involved a manager, and what the actual resolution was.`,
+]},
+{ q: `Tell me about giving difficult or critical feedback to a peer.`,
+  a: [
+  `Give a specific, real example — what the issue was (e.g. recurring low-quality PRs, talking over others in meetings) and why it mattered enough to address directly.`,
+  `Describe the delivery: private, specific, behavior-focused (not personality-focused), and timed close to the behavior rather than saved up.`,
+  `Share how they responded and what changed — and if it didn't land well the first time, what you adjusted.`,
+]},
+{ q: `Tell me about a time you received critical feedback. How did you respond?`,
+  a: [
+  `Pick feedback that actually stung a bit — shows self-awareness, not a softball example.`,
+  `Describe your initial reaction honestly, then how you processed it (sought clarification, checked it against other signals) rather than immediately agreeing or immediately getting defensive.`,
+  `Show the concrete behavior change that followed, and ideally how you later confirmed with the feedback-giver that it had improved.`,
+]},
+{ q: `Describe a time you advocated for a technical approach that stakeholders initially resisted.`,
+  a: [
+  `State their objection accurately and fairly (cost, risk, unfamiliarity) rather than strawmanning it.`,
+  `Explain how you built the case in terms they cared about — a small spike/prototype, a cost comparison, a risk the current approach carried that they hadn't considered.`,
+  `Describe how you got to yes (compromise, phased rollout, pilot) and the actual result once implemented.`,
+]},
+{ q: `How do you approach ramping up on a legacy codebase you didn't write?`,
+  a: [
+  `Describe concrete tactics: reading tests before code, tracing a real user flow end-to-end, talking to whoever's still around who wrote it, git log/blame for intent on confusing areas.`,
+  `Mention how you avoid the trap of rewriting things you don't yet understand — making small, safe changes first to build confidence and test coverage before larger refactors.`,
+  `Give a specific example of a legacy system you ramped up on and a contribution you made once you understood it.`,
+]},
+{ q: `Tell me about a cross-functional conflict (with design, PM, or backend) and how you resolved it.`,
+  a: [
+  `Describe the actual disagreement concretely — e.g. a design that wasn't technically feasible on the timeline, or an API contract that didn't fit the client's needs.`,
+  `Show you tried to understand their constraints (design systems, backend's other consumers, PM's commitments to stakeholders) before proposing a resolution.`,
+  `Describe the concrete compromise or solution reached, and how the relationship held up afterward — conflict resolution skill is shown by the ongoing working relationship, not just the one decision.`,
+]},
+{ q: `Describe a time you had to say no to a stakeholder request.`,
+  a: [
+  `State the request and the real reason no was the right call (technical risk, conflicting priority, insufficient time to do it safely) rather than "I didn't want to."`,
+  `Show you offered an alternative (a smaller version, a later timeline, a different approach) rather than a flat refusal.`,
+  `Describe how the stakeholder reacted and the eventual outcome — did they come back with more context that changed your answer, or did the no hold?`,
+]},
+{ q: `Tell me about a mistake or bug you caused that reached production, and what you learned.`,
+  a: [
+  `Own the mistake specifically and describe the actual technical cause — avoid vague "I wasn't careful enough."`,
+  `Explain how it was caught and the user/business impact, and your role in the fix.`,
+  `Share the concrete change in your own practice afterward (e.g. always writing a test for edge case X, double-checking a specific class of change) — the learning should be specific and still true today, not generic ("I'm more careful now").`,
+]},
+{ q: `How do you prioritize when you have competing requests from multiple stakeholders?`,
+  a: [
+  `Describe a real framework you use: impact vs effort, business priority alignment, risk if deferred — not just "whoever asks loudest."`,
+  `Show you make the tradeoffs visible rather than silently deciding — surfacing the conflict to whoever can arbitrate priority when stakeholders disagree.`,
+  `Give a concrete example where two reasonable people wanted different things from you at once, and how you resolved it.`,
+]},
+{ q: `Describe your approach to code review. Tell me about a time it really mattered.`,
+  a: [
+  `Describe what you actually look for beyond style: correctness/edge cases, test coverage, architectural fit, readability for the next person, not just nitpicks.`,
+  `Mention how you calibrate thoroughness vs velocity, and how you give feedback (suggestions vs blocking issues, tone).`,
+  `Give a specific example where a review caught something significant (a race condition, a security issue, a scalability problem) before it shipped.`,
+]},
+{ q: `Tell me about leading a project end-to-end as the most senior (or sole) Android engineer.`,
+  a: [
+  `Describe the project's scope and why ownership mattered — ambiguous requirements, technical decisions with no one else to defer to, cross-team coordination you had to drive yourself.`,
+  `Show the range of what you owned: technical design, breaking down work, unblocking yourself, communicating status/risk upward without being asked.`,
+  `Share the outcome and what you'd do differently with the autonomy you had, showing reflection rather than just a win narrative.`,
+]},
+{ q: `How do you handle ambiguity in product requirements?`,
+  a: [
+  `Describe concrete tactics: asking clarifying questions early, proposing a specific interpretation and confirming it rather than guessing silently, building a quick prototype to make the ambiguity concrete for discussion.`,
+  `Show judgment about when to just make a reasonable call versus when ambiguity is risky enough to need explicit sign-off.`,
+  `Give an example where you resolved real requirement ambiguity and how that shaped the eventual implementation.`,
+]},
+{ q: `Describe a time you influenced an outcome without having direct authority over the people involved.`,
+  a: [
+  `Name the goal and who you needed to influence (another team, a more senior stakeholder, a peer team's roadmap) and why you had no formal authority there.`,
+  `Describe the actual tactics: building a credible case with data/prototypes, finding allies, understanding what the other party cared about and framing your ask in those terms.`,
+  `Share the result, including any pushback you had to work through.`,
+]},
+{ q: `Tell me about a time you had to ramp up on unfamiliar technology quickly under pressure.`,
+  a: [
+  `Name the specific technology/gap and the time pressure (an incident, a tight deadline, an unplanned departure of the expert on the team).`,
+  `Describe your learning approach under pressure — targeted reading/docs, finding an expert to pair with, building the smallest possible test case rather than trying to learn everything first.`,
+  `Share the outcome and what you retained/productized from that crash-learning afterward (docs for the next person, a reusable pattern).`,
+]},
+{ q: `How do you approach interviewing or evaluating candidates? What do you look for in an Android candidate?`,
+  a: [
+  `Describe your actual evaluation approach — a mix of fundamentals (concurrency, lifecycle, architecture reasoning) and how they think through ambiguity/tradeoffs, not just trivia recall.`,
+  `Mention how you calibrate for seniority level and avoid bias (structured questions, consistent rubric, focusing on reasoning process over "getting the right answer" alone).`,
+  `Share a specific example of a strong or weak signal you've seen in an interview and why it moved your assessment.`,
+]},
+{ q: `Describe handling an on-call incident, like a crash spike or outage, for a mobile app.`,
+  a: [
+  `Describe how you detected/were alerted (crash-rate dashboard, Play Console vitals, user reports) and your triage process to assess severity and scope quickly.`,
+  `Explain mitigation options specific to mobile's slower release cycle — remote kill switch/feature flag, staged rollout halt, hotfix vs waiting for the next release train.`,
+  `Describe communication during the incident (status updates to stakeholders) and the follow-up (postmortem, monitoring gap closed, release process change).`,
+]},
+{ q: `Tell me about a time you had to choose between shipping fast and shipping with full quality.`,
+  a: [
+  `Describe the real tradeoff and stakes (a seasonal deadline, a competitive launch, a regulatory deadline) rather than a false urgency.`,
+  `Explain the specific corners you considered cutting and how you decided which risks were acceptable (e.g. reduced test coverage on a low-risk path vs skipping tests on payment code — not all quality cuts are equal).`,
+  `Share the outcome and whether the choice held up — did the cut corner cause problems later, and what did you learn about making that call next time?`,
+]},
+{ q: `How do you keep a distributed or remote team aligned across time zones?`,
+  a: [
+  `Describe concrete mechanisms: async-first communication (written design docs/RFCs over meetings), overlap-hours use for synchronous decisions only, clear written decision records so no one's left out of context.`,
+  `Mention how you handle the handoff problem (one region picking up where another left off) — status docs, clear ownership, avoiding silent blocking.`,
+  `Give a specific example of a project that worked well (or poorly) across time zones and what you'd change.`,
+]},
+{ q: `Describe a time a project you worked on failed or was cancelled. What did you take away from it?`,
+  a: [
+  `Be honest about the failure and the actual cause (market/strategy shift, technical infeasibility discovered late, poor scoping) rather than deflecting responsibility entirely.`,
+  `Describe your emotional/professional response — how you handled the team's morale if you were leading, and your own motivation to keep executing on other work.`,
+  `Share the concrete lesson that changed how you approach similar projects since (e.g. validating feasibility earlier, smaller bets before committing fully).`,
+]},
+{ q: `Tell me about convincing your team to adopt a new library, pattern, or architecture.`,
+  a: [
+  `Explain the problem that motivated the change (not "it's newer/cooler") and why the status quo was actually costing the team something measurable.`,
+  `Describe how you validated it before pushing broadly — a spike, a pilot in one module — and how you handled skepticism from teammates who didn't want the churn.`,
+  `Share the adoption outcome, including any regrets or things you'd scope differently next time.`,
+]},
+{ q: `How do you approach documentation and knowledge sharing on your team?`,
+  a: [
+  `Describe what you actually document (architecture decisions/ADRs, onboarding runbooks, "why" behind non-obvious code) versus what you deliberately don't over-document (self-evident code, things that go stale fast).`,
+  `Mention mechanisms beyond docs — pairing, brown-bag sessions, rotating ownership — that spread knowledge, since docs alone often go stale or unread.`,
+  `Give a concrete example where good documentation (or the lack of it) materially affected a project, incident, or onboarding.`,
+]},
+{ q: `Describe a time you had to deliver difficult news, like a delay or a regression, to leadership.`,
+  a: [
+  `Describe the situation and why it was genuinely hard to deliver (high visibility, prior commitments, leadership's expectations already set publicly).`,
+  `Explain how you prepared the message — leading with the key fact, bringing a plan/options rather than just the bad news, being direct rather than burying it.`,
+  `Share how it was received and the outcome, including anything you'd communicate differently or earlier next time to avoid the news being a surprise.`,
+]}
+];
+
+function dayIndexFromEpoch() {
+  const now = new Date();
+  const midnightLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return Math.floor(midnightLocal / 86400000);
+}
+
+function renderList(el, items) {
+  el.innerHTML = '';
+  items.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t;
+    el.appendChild(li);
+  });
+}
+
+function setupReveal(btn, answerEl) {
+  btn.addEventListener('click', () => {
+    const shown = answerEl.classList.toggle('shown');
+    btn.textContent = shown ? 'Hide answer' : 'Show answer';
+  });
+}
+
+function updateStreak() {
+  try {
+    const todayKey = new Date().toDateString();
+    const lastDay = localStorage.getItem('androidPrepLastDay');
+    let streak = parseInt(localStorage.getItem('androidPrepStreak') || '0', 10);
+
+    if (lastDay !== todayKey) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      streak = (lastDay === yesterday.toDateString()) ? streak + 1 : 1;
+      localStorage.setItem('androidPrepStreak', String(streak));
+      localStorage.setItem('androidPrepLastDay', todayKey);
+    }
+    document.getElementById('streak').textContent = '\u{1F525} ' + streak + ' day' + (streak === 1 ? '' : 's');
+  } catch (e) {
+    document.getElementById('streak').textContent = '';
+  }
+}
+
+(function init() {
+  const dayIdx = dayIndexFromEpoch();
+  const tech = TECH[dayIdx % TECH.length];
+  const beh = BEHAVIOR[dayIdx % BEHAVIOR.length];
+
+  document.getElementById('techQ').textContent = tech.q;
+  renderList(document.getElementById('techAList'), tech.a);
+
+  document.getElementById('behQ').textContent = beh.q;
+  renderList(document.getElementById('behAList'), beh.a);
+
+  document.getElementById('dayInfo').innerHTML = '<b>' + new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) + '</b>';
+  document.getElementById('techCount').textContent = TECH.length;
+  document.getElementById('behCount').textContent = BEHAVIOR.length;
+
+  setupReveal(document.getElementById('techBtn'), document.getElementById('techA'));
+  setupReveal(document.getElementById('behBtn'), document.getElementById('behA'));
+
+  updateStreak();
+})();
+</script>
+</body>
+</html>
