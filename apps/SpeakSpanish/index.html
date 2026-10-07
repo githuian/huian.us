@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>Speak Spanish</title>
-<meta name="description" content="Practice Spanish mini-dialogues out loud — hear both sides, play your role, no writing drills." />
+<meta name="description" content="A daily Spanish video plus mini-dialogues to practice out loud — no writing drills." />
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -221,6 +221,35 @@
   }
   .btn.more:hover { border-color: var(--accent); color: var(--text); }
 
+  .video-card { padding: 16px; }
+  .video-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  .video-label b { color: var(--text); }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--panel-2);
+  }
+  .video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .video-fallback {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin: 10px 0 0;
+  }
+  .video-fallback a { color: var(--accent); }
+
   footer {
     color: var(--muted);
     font-size: 0.8rem;
@@ -244,17 +273,31 @@
     <span class="pill" id="dayInfo"></span>
   </div>
 
+  <h2 class="section-title">Today's video</h2>
+  <div class="card video-card">
+    <p class="video-label">Today's theme: <b id="videoLabel"></b></p>
+    <div class="video-frame">
+      <iframe id="videoFrame" src="" title="Spanish learning video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
+    </div>
+    <p class="video-fallback">Video not loading? <a id="videoFallbackLink" href="#" target="_blank" rel="noopener">Open these results on YouTube instead &rarr;</a></p>
+  </div>
+
   <h2 class="section-title">Today's dialogues</h2>
   <div id="dialogueSection"></div>
   <button class="btn more" id="moreDialogueBtn">+ Another dialogue</button>
 
   <footer>
-    Today's set rotates automatically at midnight (your local time) through a bank of
+    Today's dialogue set rotates automatically at midnight (your local time) through a bank of
     <span id="dialogueCount"></span> mini-dialogues across everyday situations — cafés, directions,
     hotels, shopping, doctor visits, and more.<br><br>
     Tap <b>▶️ Play dialogue</b> to hear it acted out: the other speaker's lines play normally, and
     "you" lines pause so you can say them out loud before it moves on. Tap any bubble's 🔊 to
-    replay just that line.
+    replay just that line.<br><br>
+    The daily video is a live YouTube search embed for that day's theme (not a hand-picked video) —
+    it's YouTube's own player showing YouTube's own content, nothing hosted on this site, so it's
+    whatever real, current videos match the theme on a given day.
   </footer>
 </div>
 
@@ -370,6 +413,23 @@ const DIALOGUES = [
 const DAILY_COUNT = 2;
 const YOUR_LINE_PAUSE_MS = 2400;
 const BETWEEN_LINE_PAUSE_MS = 350;
+
+const VIDEO_TOPICS = [
+{ label: `Beginner conversation practice`, query: `spanish conversation practice for beginners` },
+{ label: `Slow listening practice`, query: `slow spanish listening practice` },
+{ label: `Pronunciation practice`, query: `spanish pronunciation practice` },
+{ label: `Short stories for beginners`, query: `spanish short stories for beginners with audio` },
+{ label: `Restaurant dialogue practice`, query: `spanish restaurant dialogue roleplay` },
+{ label: `Travel phrases`, query: `spanish travel phrases pronunciation` },
+{ label: `Easy Spanish news`, query: `easy spanish news for beginners` },
+{ label: `Grammar explained simply`, query: `spanish grammar explained simply` },
+{ label: `Common idioms`, query: `spanish idioms explained in english` },
+{ label: `Shadowing practice`, query: `spanish shadowing practice native speaker` },
+{ label: `Intermediate conversation`, query: `spanish conversation practice intermediate` },
+{ label: `Culture with subtitles`, query: `spanish culture video with spanish subtitles` },
+{ label: `Common learner mistakes`, query: `common spanish mistakes english speakers make` },
+{ label: `Listening comprehension`, query: `spanish listening comprehension practice beginner` }
+];
 
 function dayIndexFromEpoch() {
   const now = new Date();
@@ -596,6 +656,14 @@ function updateStreak() {
   }
 }
 
+function setupVideo(dayIdx) {
+  const topic = VIDEO_TOPICS[dayIdx % VIDEO_TOPICS.length];
+  const encoded = encodeURIComponent(topic.query);
+  document.getElementById('videoLabel').textContent = topic.label;
+  document.getElementById('videoFrame').src = `https://www.youtube.com/embed?listType=search&list=${encoded}`;
+  document.getElementById('videoFallbackLink').href = `https://www.youtube.com/results?search_query=${encoded}`;
+}
+
 (function init() {
   const dayIdx = dayIndexFromEpoch();
   const indices = dailyWindow(dayIdx, DIALOGUES.length, DAILY_COUNT);
@@ -606,6 +674,7 @@ function updateStreak() {
   document.getElementById('dialogueCount').textContent = DIALOGUES.length;
 
   setupMoreButton(document.getElementById('moreDialogueBtn'), DIALOGUES, new Set(indices), section);
+  setupVideo(dayIdx);
 
   updateStreak();
 })();
