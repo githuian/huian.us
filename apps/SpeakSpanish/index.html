@@ -20,7 +20,6 @@
     --muted: #9aa3b2;
     --accent: #5b9dff;
     --accent-2: #34d399;
-    --warn: #f0b429;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   @media (prefers-color-scheme: light) {
@@ -33,7 +32,6 @@
       --muted: #5f6673;
       --accent: #2f6fed;
       --accent-2: #0f9d68;
-      --warn: #b5790a;
     }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -81,19 +79,6 @@
     color: var(--muted);
   }
   .pill b { color: var(--text); }
-
-  .notice {
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-bottom: 20px;
-    display: none;
-  }
-  .notice.shown { display: block; }
-  .notice b { color: var(--warn); }
 
   .section-title {
     font-size: 0.75rem;
@@ -162,12 +147,6 @@
   .btn:disabled:hover { border-color: var(--border); }
 
   .btn.listen { border-color: var(--accent); color: var(--accent); }
-  .btn.speak { border-color: var(--accent-2); color: var(--accent-2); }
-  .btn.speak.listening {
-    background: var(--accent-2);
-    color: #06281c;
-    border-color: var(--accent-2);
-  }
   .btn.meaning { margin-top: 10px; display: block; width: 100%; }
 
   .meaning {
@@ -179,19 +158,6 @@
     display: none;
   }
   .meaning.shown { display: block; }
-
-  .result {
-    margin-top: 12px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    line-height: 1.45;
-    display: none;
-  }
-  .result.shown { display: block; }
-  .result.good { background: rgba(52,211,153,0.12); color: var(--accent-2); }
-  .result.ok { background: rgba(240,180,41,0.12); color: var(--warn); }
-  .result.bad { background: rgba(91,157,255,0.08); color: var(--muted); }
 
   .btn.more {
     display: block;
@@ -226,12 +192,6 @@
     <span class="pill" id="dayInfo"></span>
   </div>
 
-  <div class="notice" id="noMicNotice">
-    <b>Heads up:</b> this browser doesn't support speech recognition, so the "Your turn" scoring
-    won't work here. You can still use "Listen" and practice out loud on your own — try Chrome on
-    desktop or Android for the speaking score.
-  </div>
-
   <h2 class="section-title">Today's phrases</h2>
   <div id="phraseSection"></div>
   <button class="btn more" id="morePhraseBtn">+ Another phrase</button>
@@ -240,9 +200,8 @@
     Today's set rotates automatically at midnight (your local time) through a bank of
     <span id="phraseCount"></span> spoken phrases across greetings, food, directions, shopping,
     travel, plans, and everyday small talk.<br><br>
-    "Your turn" uses your browser's built-in speech recognition (no server involved on this site) —
-    your browser vendor's speech service may process the audio to transcribe it, same as any other
-    use of your device's dictation feature.
+    Tap Listen (or Slow), then repeat the phrase out loud yourself a few times — speaking it
+    is the point, no scoring needed.
   </footer>
 </div>
 
@@ -354,61 +313,6 @@ if ('speechSynthesis' in window) {
   speechSynthesis.onvoiceschanged = () => { cachedVoice = pickSpanishVoice(); };
 }
 
-// --- Speech recognition (scoring) ---
-const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
-const micSupported = !!SpeechRecognitionCtor;
-let recognizer = null;
-let activeSpeakHandlers = null;
-
-function stripAccents(s) {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '');
-}
-function normalize(s) {
-  return stripAccents(s.toLowerCase())
-    .replace(/[¿?¡!.,;:"']/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-function levenshtein(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      dp[i][j] = a[i - 1] === b[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-    }
-  }
-  return dp[m][n];
-}
-function similarity(target, heard) {
-  const a = normalize(target), b = normalize(heard);
-  const maxLen = Math.max(a.length, b.length, 1);
-  return 1 - levenshtein(a, b) / maxLen;
-}
-
-function getRecognizer() {
-  if (recognizer) return recognizer;
-  recognizer = new SpeechRecognitionCtor();
-  recognizer.lang = 'es-ES';
-  recognizer.interimResults = false;
-  recognizer.maxAlternatives = 1;
-  recognizer.continuous = false;
-  recognizer.onresult = (e) => {
-    const heard = e.results[0][0].transcript;
-    if (activeSpeakHandlers) activeSpeakHandlers.onHeard(heard);
-  };
-  recognizer.onerror = (e) => {
-    if (activeSpeakHandlers) activeSpeakHandlers.onError(e.error);
-  };
-  recognizer.onend = () => {
-    if (activeSpeakHandlers) activeSpeakHandlers.onEnd();
-  };
-  return recognizer;
-}
-
 function buildCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -443,17 +347,7 @@ function buildCard(item) {
   slowBtn.addEventListener('click', () => speak(item.es, 0.6));
   row.appendChild(slowBtn);
 
-  const speakBtn = document.createElement('button');
-  speakBtn.className = 'btn speak';
-  speakBtn.textContent = '🎤 Your turn';
-  if (!micSupported) speakBtn.disabled = true;
-  row.appendChild(speakBtn);
-
   card.appendChild(row);
-
-  const result = document.createElement('div');
-  result.className = 'result';
-  card.appendChild(result);
 
   const meaningBtn = document.createElement('button');
   meaningBtn.className = 'btn meaning';
@@ -468,54 +362,6 @@ function buildCard(item) {
   meaningBtn.addEventListener('click', () => {
     const shown = meaning.classList.toggle('shown');
     meaningBtn.textContent = shown ? 'Hide meaning' : 'Show meaning';
-  });
-
-  speakBtn.addEventListener('click', () => {
-    if (!micSupported) return;
-    speechSynthesis.cancel();
-    const rec = getRecognizer();
-
-    activeSpeakHandlers = {
-      onHeard(heard) {
-        const score = similarity(item.es, heard);
-        result.classList.add('shown');
-        if (score >= 0.75) {
-          result.className = 'result shown good';
-          result.textContent = `✅ Nice! Heard: "${heard}"`;
-        } else if (score >= 0.45) {
-          result.className = 'result shown ok';
-          result.textContent = `🟡 Close — heard: "${heard}". Try again, or hit Slow to hear it broken down.`;
-        } else {
-          result.className = 'result shown bad';
-          result.textContent = `Heard: "${heard}". Doesn't quite match yet — tap Listen and try once more.`;
-        }
-      },
-      onError(err) {
-        result.classList.add('shown');
-        result.className = 'result shown bad';
-        if (err === 'not-allowed' || err === 'permission-denied') {
-          result.textContent = `Microphone access was blocked — allow it in your browser's site settings to use "Your turn."`;
-        } else if (err === 'no-speech') {
-          result.textContent = `Didn't catch anything — tap "Your turn" and try speaking again.`;
-        } else {
-          result.textContent = `Speech recognition had a hiccup (${err}) — try again.`;
-        }
-      },
-      onEnd() {
-        speakBtn.classList.remove('listening');
-        speakBtn.textContent = '🎤 Your turn';
-      }
-    };
-
-    speakBtn.classList.add('listening');
-    speakBtn.textContent = '🎤 Listening…';
-    try {
-      rec.start();
-    } catch (e) {
-      // start() throws if already running; ignore, user can retap
-      speakBtn.classList.remove('listening');
-      speakBtn.textContent = '🎤 Your turn';
-    }
   });
 
   return card;
@@ -562,10 +408,6 @@ function updateStreak() {
 }
 
 (function init() {
-  if (!micSupported) {
-    document.getElementById('noMicNotice').classList.add('shown');
-  }
-
   const dayIdx = dayIndexFromEpoch();
   const indices = dailyWindow(dayIdx, PHRASES.length, DAILY_COUNT);
   const section = document.getElementById('phraseSection');
