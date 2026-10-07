@@ -147,6 +147,30 @@
   .answer li { margin-bottom: 6px; }
   .answer li:last-child { margin-bottom: 0; }
 
+  .section-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 12px;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+
+  .btn.more {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .btn.more:hover { border-color: var(--accent); color: var(--text); }
+  .btn.more:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .btn.more:disabled:hover { border-color: var(--border); color: var(--muted); }
+
   footer {
     color: var(--muted);
     font-size: 0.8rem;
@@ -165,36 +189,24 @@
   </div>
 
   <h1>Android Interview Prep</h1>
-  <p class="sub">One senior-level technical question and one behavioral question, every day.</p>
+  <p class="sub">A fresh set of senior-level technical and behavioral questions, every day.</p>
 
   <div class="meta">
     <span class="pill" id="dayInfo"></span>
   </div>
 
-  <div class="card tech">
-    <span class="tag tech">Technical</span>
-    <p class="question" id="techQ"></p>
-    <button class="btn reveal" id="techBtn">Show answer</button>
-    <div class="answer" id="techA">
-      <h3>Model answer</h3>
-      <ul id="techAList"></ul>
-    </div>
-  </div>
+  <h2 class="section-title">Technical</h2>
+  <div id="techSection"></div>
+  <button class="btn more" id="moreTechBtn">+ Another technical question</button>
 
-  <div class="card behavior">
-    <span class="tag behavior">Behavioral</span>
-    <p class="question" id="behQ"></p>
-    <button class="btn reveal" id="behBtn">Show answer</button>
-    <div class="answer" id="behA">
-      <h3>What a strong answer covers</h3>
-      <ul id="behAList"></ul>
-    </div>
-  </div>
+  <h2 class="section-title">Behavioral</h2>
+  <div id="behSection"></div>
+  <button class="btn more" id="moreBehBtn">+ Another behavioral question</button>
 
   <footer>
-    Questions rotate automatically at midnight (your local time) through a bank of
+    Today's set rotates automatically at midnight (your local time) through a bank of
     <span id="techCount"></span> technical and <span id="behCount"></span> behavioral questions.
-    Come back tomorrow for a new pair.<br>
+    Use the "Another question" buttons any time for extra practice beyond today's set.<br>
     Behavioral prompts don't have one right answer &mdash; the reveal is a STAR-style
     framework for what a strong answer touches on, not a script to memorize.
   </footer>
@@ -718,25 +730,85 @@ const BEHAVIOR = [
 ]}
 ];
 
+const DAILY_TECH_COUNT = 3;
+const DAILY_BEHAVIOR_COUNT = 2;
+
 function dayIndexFromEpoch() {
   const now = new Date();
   const midnightLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   return Math.floor(midnightLocal / 86400000);
 }
 
-function renderList(el, items) {
-  el.innerHTML = '';
-  items.forEach(t => {
-    const li = document.createElement('li');
-    li.textContent = t;
-    el.appendChild(li);
-  });
+// A rotating, non-overlapping window into the bank so each day's set is fresh
+// and the whole bank cycles through before any question repeats.
+function dailyWindow(dayIdx, bankLength, windowSize) {
+  const start = (dayIdx * windowSize) % bankLength;
+  const indices = [];
+  for (let i = 0; i < windowSize; i++) {
+    indices.push((start + i) % bankLength);
+  }
+  return indices;
 }
 
-function setupReveal(btn, answerEl) {
+function buildCard(type, item, labelText) {
+  const card = document.createElement('div');
+  card.className = 'card ' + type;
+
+  const tag = document.createElement('span');
+  tag.className = 'tag ' + type;
+  tag.textContent = type === 'tech' ? 'Technical' : 'Behavioral';
+  card.appendChild(tag);
+
+  const q = document.createElement('p');
+  q.className = 'question';
+  q.textContent = item.q;
+  card.appendChild(q);
+
+  const btn = document.createElement('button');
+  btn.className = 'btn reveal';
+  btn.textContent = 'Show answer';
+  card.appendChild(btn);
+
+  const answer = document.createElement('div');
+  answer.className = 'answer';
+  const h3 = document.createElement('h3');
+  h3.textContent = labelText;
+  answer.appendChild(h3);
+  const ul = document.createElement('ul');
+  item.a.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t;
+    ul.appendChild(li);
+  });
+  answer.appendChild(ul);
+  card.appendChild(answer);
+
   btn.addEventListener('click', () => {
-    const shown = answerEl.classList.toggle('shown');
+    const shown = answer.classList.toggle('shown');
     btn.textContent = shown ? 'Hide answer' : 'Show answer';
+  });
+
+  return card;
+}
+
+function setupMoreButton(btn, bank, shownIndices, section, type, labelText) {
+  btn.addEventListener('click', () => {
+    if (shownIndices.size >= bank.length) {
+      btn.textContent = `You've seen every ${type === 'tech' ? 'technical' : 'behavioral'} question in the bank`;
+      btn.disabled = true;
+      return;
+    }
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * bank.length);
+    } while (shownIndices.has(idx));
+    shownIndices.add(idx);
+    section.appendChild(buildCard(type, bank[idx], labelText));
+
+    if (shownIndices.size >= bank.length) {
+      btn.textContent = `You've seen every ${type === 'tech' ? 'technical' : 'behavioral'} question in the bank`;
+      btn.disabled = true;
+    }
   });
 }
 
@@ -761,21 +833,21 @@ function updateStreak() {
 
 (function init() {
   const dayIdx = dayIndexFromEpoch();
-  const tech = TECH[dayIdx % TECH.length];
-  const beh = BEHAVIOR[dayIdx % BEHAVIOR.length];
+  const techIndices = dailyWindow(dayIdx, TECH.length, DAILY_TECH_COUNT);
+  const behIndices = dailyWindow(dayIdx, BEHAVIOR.length, DAILY_BEHAVIOR_COUNT);
 
-  document.getElementById('techQ').textContent = tech.q;
-  renderList(document.getElementById('techAList'), tech.a);
+  const techSection = document.getElementById('techSection');
+  const behSection = document.getElementById('behSection');
 
-  document.getElementById('behQ').textContent = beh.q;
-  renderList(document.getElementById('behAList'), beh.a);
+  techIndices.forEach(i => techSection.appendChild(buildCard('tech', TECH[i], 'Model answer')));
+  behIndices.forEach(i => behSection.appendChild(buildCard('behavior', BEHAVIOR[i], 'What a strong answer covers')));
 
   document.getElementById('dayInfo').innerHTML = '<b>' + new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) + '</b>';
   document.getElementById('techCount').textContent = TECH.length;
   document.getElementById('behCount').textContent = BEHAVIOR.length;
 
-  setupReveal(document.getElementById('techBtn'), document.getElementById('techA'));
-  setupReveal(document.getElementById('behBtn'), document.getElementById('behA'));
+  setupMoreButton(document.getElementById('moreTechBtn'), TECH, new Set(techIndices), techSection, 'tech', 'Model answer');
+  setupMoreButton(document.getElementById('moreBehBtn'), BEHAVIOR, new Set(behIndices), behSection, 'behavior', 'What a strong answer covers');
 
   updateStreak();
 })();
