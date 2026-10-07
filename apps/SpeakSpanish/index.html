@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>Speak Spanish</title>
-<meta name="description" content="Listen to native pronunciation, then practice speaking Spanish out loud — no writing drills." />
+<meta name="description" content="Practice Spanish mini-dialogues out loud — hear both sides, play your role, no writing drills." />
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -96,37 +96,24 @@
     padding: 20px;
     margin-bottom: 18px;
   }
-  .tag {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 999px;
-    margin-bottom: 12px;
-    background: rgba(91,157,255,0.15);
-    color: var(--accent);
-  }
 
-  .phrase {
-    font-size: 1.3rem;
+  .dlg-head { margin-bottom: 14px; }
+  .dlg-title {
+    font-size: 1.1rem;
     font-weight: 700;
-    line-height: 1.3;
-    margin: 0 0 4px;
+    margin: 0 0 2px;
   }
-  .phonetic {
-    font-size: 0.9rem;
+  .dlg-subtitle {
+    font-size: 0.85rem;
     color: var(--muted);
-    margin: 0 0 16px;
-    font-style: italic;
+    margin: 0;
   }
 
-  .btn-row {
+  .controls {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 16px;
   }
   .btn {
     appearance: none;
@@ -145,19 +132,84 @@
   .btn:active { transform: scale(0.98); }
   .btn:disabled { opacity: 0.45; cursor: default; }
   .btn:disabled:hover { border-color: var(--border); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.toggle.on { border-color: var(--accent-2); color: var(--accent-2); }
 
-  .btn.listen { border-color: var(--accent); color: var(--accent); }
-  .btn.meaning { margin-top: 10px; display: block; width: 100%; }
-
-  .meaning {
-    margin-top: 12px;
-    padding-top: 12px;
+  .bubbles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .bubble {
+    max-width: 82%;
+    border-radius: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  .bubble.them {
+    align-self: flex-start;
+    background: var(--panel-2);
+    border-bottom-left-radius: 4px;
+  }
+  .bubble.you {
+    align-self: flex-end;
+    background: rgba(91,157,255,0.10);
+    border-color: rgba(91,157,255,0.35);
+    border-bottom-right-radius: 4px;
+  }
+  .bubble.active {
+    border-color: var(--accent-2);
+    box-shadow: 0 0 0 2px rgba(52,211,153,0.35);
+  }
+  .bubble-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .bubble-es {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 0;
+  }
+  .bubble-role {
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 4px;
+  }
+  .bubble.you .bubble-role { text-align: right; }
+  .bubble-phon {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-style: italic;
+    margin: 4px 0 0;
+  }
+  .bubble-en {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin: 6px 0 0;
+    padding-top: 6px;
     border-top: 1px dashed var(--border);
-    font-size: 0.95rem;
-    color: var(--text);
     display: none;
   }
-  .meaning.shown { display: block; }
+  .card.show-en .bubble-en { display: block; }
+
+  .bubble-speak {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    flex: none;
+    padding: 2px 4px;
+    line-height: 1;
+  }
+  .bubble-speak:hover { color: var(--accent); }
 
   .btn.more {
     display: block;
@@ -186,93 +238,138 @@
   </div>
 
   <h1>Speak Spanish</h1>
-  <p class="sub">Listen to native pronunciation, then say it out loud. No typing, no writing drills.</p>
+  <p class="sub">Short conversations, not flashcards. Hear both sides, then play your role out loud.</p>
 
   <div class="meta">
     <span class="pill" id="dayInfo"></span>
   </div>
 
-  <h2 class="section-title">Today's phrases</h2>
-  <div id="phraseSection"></div>
-  <button class="btn more" id="morePhraseBtn">+ Another phrase</button>
+  <h2 class="section-title">Today's dialogues</h2>
+  <div id="dialogueSection"></div>
+  <button class="btn more" id="moreDialogueBtn">+ Another dialogue</button>
 
   <footer>
     Today's set rotates automatically at midnight (your local time) through a bank of
-    <span id="phraseCount"></span> spoken phrases across greetings, food, directions, shopping,
-    travel, plans, and everyday small talk.<br><br>
-    Tap Listen (or Slow), then repeat the phrase out loud yourself a few times — speaking it
-    is the point, no scoring needed.
+    <span id="dialogueCount"></span> mini-dialogues across everyday situations — cafés, directions,
+    hotels, shopping, doctor visits, and more.<br><br>
+    Tap <b>▶️ Play dialogue</b> to hear it acted out: the other speaker's lines play normally, and
+    "you" lines pause so you can say them out loud before it moves on. Tap any bubble's 🔊 to
+    replay just that line.
   </footer>
 </div>
 
 <script>
-const PHRASES = [
-{ cat: `Greetings`, es: `Hola, ¿cómo estás?`, en: `Hi, how are you?`, phon: `OH-lah, KOH-moh ess-TAHS` },
-{ cat: `Greetings`, es: `Buenos días`, en: `Good morning`, phon: `BWEH-nohs DEE-ahs` },
-{ cat: `Greetings`, es: `Buenas tardes`, en: `Good afternoon`, phon: `BWEH-nahs TAR-dess` },
-{ cat: `Greetings`, es: `Buenas noches`, en: `Good evening / good night`, phon: `BWEH-nahs NOH-chess` },
-{ cat: `Greetings`, es: `Mucho gusto`, en: `Nice to meet you`, phon: `MOO-choh GOOS-toh` },
-{ cat: `Greetings`, es: `¿Cómo te llamas?`, en: `What's your name?`, phon: `KOH-moh teh YAH-mahs` },
-{ cat: `Greetings`, es: `Me llamo Carlos`, en: `My name is Carlos`, phon: `meh YAH-moh KAR-lohs` },
-{ cat: `Greetings`, es: `¿De dónde eres?`, en: `Where are you from?`, phon: `deh DOHN-deh EH-rehs` },
-{ cat: `Greetings`, es: `Hasta luego`, en: `See you later`, phon: `AHS-tah LWEH-goh` },
-{ cat: `Greetings`, es: `Nos vemos pronto`, en: `See you soon`, phon: `nohs VEH-mohs PROHN-toh` },
-
-{ cat: `Food & Drinks`, es: `¿Qué me recomienda?`, en: `What do you recommend?`, phon: `keh meh reh-koh-mee-EHN-dah` },
-{ cat: `Food & Drinks`, es: `Quisiera un café, por favor`, en: `I would like a coffee, please`, phon: `kee-see-EH-rah oon kah-FEH por fah-VOR` },
-{ cat: `Food & Drinks`, es: `La cuenta, por favor`, en: `The check, please`, phon: `lah KWEN-tah por fah-VOR` },
-{ cat: `Food & Drinks`, es: `¿Tienen algo sin gluten?`, en: `Do you have something gluten-free?`, phon: `tee-EH-nen AHL-goh seen GLOO-ten` },
-{ cat: `Food & Drinks`, es: `Está delicioso`, en: `It's delicious`, phon: `ess-TAH deh-lee-see-OH-soh` },
-{ cat: `Food & Drinks`, es: `¿Me trae la carta, por favor?`, en: `Could you bring me the menu, please?`, phon: `meh TRAH-eh lah KAR-tah por fah-VOR` },
-{ cat: `Food & Drinks`, es: `Para llevar, por favor`, en: `To go, please`, phon: `PAH-rah yeh-VAR por fah-VOR` },
-{ cat: `Food & Drinks`, es: `Soy alérgico a los mariscos`, en: `I'm allergic to shellfish`, phon: `soy ah-LEHR-hee-koh ah lohs mah-REES-kohs` },
-
-{ cat: `Directions`, es: `¿Dónde está el baño?`, en: `Where is the bathroom?`, phon: `DOHN-deh ess-TAH el BAH-nyoh` },
-{ cat: `Directions`, es: `¿Cómo llego a la estación?`, en: `How do I get to the station?`, phon: `KOH-moh YEH-goh ah lah ess-tah-see-OHN` },
-{ cat: `Directions`, es: `Siga derecho`, en: `Go straight ahead`, phon: `SEE-gah deh-REH-choh` },
-{ cat: `Directions`, es: `Gire a la izquierda`, en: `Turn left`, phon: `HEE-reh ah lah ees-kee-EHR-dah` },
-{ cat: `Directions`, es: `Gire a la derecha`, en: `Turn right`, phon: `HEE-reh ah lah deh-REH-chah` },
-{ cat: `Directions`, es: `¿Está lejos de aquí?`, en: `Is it far from here?`, phon: `ess-TAH LEH-hohs deh ah-KEE` },
-{ cat: `Directions`, es: `¿Cuánto cuesta el taxi al aeropuerto?`, en: `How much is a taxi to the airport?`, phon: `KWAN-toh KWES-tah el TAHK-see ahl ah-eh-roh-PWEHR-toh` },
-{ cat: `Directions`, es: `Estoy perdido`, en: `I'm lost`, phon: `ess-TOY pehr-DEE-doh` },
-
-{ cat: `Shopping`, es: `¿Cuánto cuesta esto?`, en: `How much does this cost?`, phon: `KWAN-toh KWES-tah ESS-toh` },
-{ cat: `Shopping`, es: `¿Tiene esto en otro color?`, en: `Do you have this in another color?`, phon: `tee-EH-neh ESS-toh en OH-troh koh-LOR` },
-{ cat: `Shopping`, es: `¿Puedo probármelo?`, en: `Can I try it on?`, phon: `PWEH-doh proh-BAR-meh-loh` },
-{ cat: `Shopping`, es: `Es muy caro`, en: `It's very expensive`, phon: `ehs mwee KAH-roh` },
-{ cat: `Shopping`, es: `¿Aceptan tarjeta de crédito?`, en: `Do you accept credit cards?`, phon: `ah-SEP-tahn tar-HEH-tah deh KREH-dee-toh` },
-{ cat: `Shopping`, es: `Solo estoy mirando, gracias`, en: `I'm just looking, thanks`, phon: `SOH-loh ess-TOY mee-RAHN-doh GRAH-see-ahs` },
-
-{ cat: `Travel & Emergencies`, es: `Necesito ayuda`, en: `I need help`, phon: `neh-seh-SEE-toh ah-YOO-dah` },
-{ cat: `Travel & Emergencies`, es: `Llame a un médico, por favor`, en: `Please call a doctor`, phon: `YAH-meh ah oon MEH-dee-koh por fah-VOR` },
-{ cat: `Travel & Emergencies`, es: `He perdido mi pasaporte`, en: `I've lost my passport`, phon: `eh pehr-DEE-doh mee pah-sah-POR-teh` },
-{ cat: `Travel & Emergencies`, es: `¿Dónde está el hospital más cercano?`, en: `Where's the nearest hospital?`, phon: `DOHN-deh ess-TAH el ohs-pee-TAHL mahs sehr-KAH-noh` },
-{ cat: `Travel & Emergencies`, es: `¿Habla inglés?`, en: `Do you speak English?`, phon: `AH-blah een-GLEHS` },
-{ cat: `Travel & Emergencies`, es: `No entiendo, ¿puede repetirlo?`, en: `I don't understand, can you repeat that?`, phon: `noh en-tee-EHN-doh PWEH-deh reh-peh-TEER-loh` },
-
-{ cat: `Making Plans`, es: `¿Quieres salir a cenar esta noche?`, en: `Do you want to go out for dinner tonight?`, phon: `kee-EH-rehs sah-LEER ah seh-NAR ESS-tah NOH-cheh` },
-{ cat: `Making Plans`, es: `¿A qué hora nos vemos?`, en: `What time are we meeting?`, phon: `ah keh OH-rah nohs VEH-mohs` },
-{ cat: `Making Plans`, es: `¿Nos vemos el sábado?`, en: `Shall we meet on Saturday?`, phon: `nohs VEH-mohs el SAH-bah-doh` },
-{ cat: `Making Plans`, es: `Tengo planes este fin de semana`, en: `I have plans this weekend`, phon: `TEN-goh PLAH-nehs ESS-teh feen deh seh-MAH-nah` },
-{ cat: `Making Plans`, es: `¿Te gustaría venir a la fiesta?`, en: `Would you like to come to the party?`, phon: `teh goos-tah-REE-ah veh-NEER ah lah fee-ESS-tah` },
-{ cat: `Making Plans`, es: `Lo siento, no puedo`, en: `I'm sorry, I can't`, phon: `loh see-EHN-toh noh PWEH-doh` },
-
-{ cat: `Everyday Small Talk`, es: `¿Qué tal tu día?`, en: `How was your day?`, phon: `keh tahl too DEE-ah` },
-{ cat: `Everyday Small Talk`, es: `Estoy un poco cansado`, en: `I'm a little tired`, phon: `ess-TOY oon POH-koh kahn-SAH-doh` },
-{ cat: `Everyday Small Talk`, es: `¿Qué hora es?`, en: `What time is it?`, phon: `keh OH-rah ess` },
-{ cat: `Everyday Small Talk`, es: `No pasa nada`, en: `It's no big deal / no worries`, phon: `noh PAH-sah NAH-dah` },
-{ cat: `Everyday Small Talk`, es: `¡Qué bueno!`, en: `That's great!`, phon: `keh BWEH-noh` },
-{ cat: `Everyday Small Talk`, es: `Más o menos`, en: `So-so / more or less`, phon: `mahs oh MEH-nohs` },
-{ cat: `Everyday Small Talk`, es: `¿En serio?`, en: `Really? Seriously?`, phon: `en SEH-ree-oh` },
-
-{ cat: `Opinions & Feelings`, es: `Creo que tienes razón`, en: `I think you're right`, phon: `KREH-oh keh tee-EH-nehs rah-SOHN` },
-{ cat: `Opinions & Feelings`, es: `Me encanta esta canción`, en: `I love this song`, phon: `meh en-KAHN-tah ESS-tah kahn-see-OHN` },
-{ cat: `Opinions & Feelings`, es: `Estoy muy emocionado`, en: `I'm very excited`, phon: `ess-TOY mwee eh-moh-see-oh-NAH-doh` },
-{ cat: `Opinions & Feelings`, es: `No estoy de acuerdo`, en: `I don't agree`, phon: `noh ess-TOY deh ah-KWEHR-doh` },
-{ cat: `Opinions & Feelings`, es: `Eso me preocupa un poco`, en: `That worries me a little`, phon: `EH-soh meh preh-oh-KOO-pah oon POH-koh` }
+const DIALOGUES = [
+{ title: `En el café`, subtitle: `At the café`, turns: [
+  { speaker: `them`, es: `¡Buenos días! ¿Qué le puedo servir?`, en: `Good morning! What can I get you?`, phon: `BWEH-nohs DEE-ahs, keh leh PWEH-doh sehr-VEER` },
+  { speaker: `you`, es: `Quisiera un café con leche, por favor.`, en: `I'd like a coffee with milk, please.`, phon: `kee-see-EH-rah oon kah-FEH kohn LEH-cheh por fah-VOR` },
+  { speaker: `them`, es: `¿Algo más?`, en: `Anything else?`, phon: `AHL-goh mahs` },
+  { speaker: `you`, es: `Sí, también un croissant.`, en: `Yes, also a croissant.`, phon: `see, tahm-bee-EHN oon kwah-SAHN` },
+  { speaker: `them`, es: `Enseguida se lo traigo.`, en: `I'll bring it right away.`, phon: `en-seh-GHEE-dah seh loh TRAI-goh` }
+]},
+{ title: `Pidiendo direcciones`, subtitle: `Asking for directions`, turns: [
+  { speaker: `you`, es: `Disculpe, ¿cómo llego a la plaza principal?`, en: `Excuse me, how do I get to the main square?`, phon: `dees-KOOL-peh, KOH-moh YEH-goh ah lah PLAH-sah preen-see-PAHL` },
+  { speaker: `them`, es: `Siga derecho y gire a la izquierda en el semáforo.`, en: `Go straight and turn left at the traffic light.`, phon: `SEE-gah deh-REH-choh ee HEE-reh ah lah ees-kee-EHR-dah en el seh-MAH-foh-roh` },
+  { speaker: `you`, es: `¿Está muy lejos?`, en: `Is it very far?`, phon: `ess-TAH mwee LEH-hohs` },
+  { speaker: `them`, es: `No, a unos cinco minutos caminando.`, en: `No, about five minutes walking.`, phon: `noh, ah OO-nohs SEEN-koh mee-NOO-tohs kah-mee-NAHN-doh` },
+  { speaker: `you`, es: `Muchas gracias por su ayuda.`, en: `Thank you very much for your help.`, phon: `MOO-chahs GRAH-see-ahs por soo ah-YOO-dah` }
+]},
+{ title: `Conociendo a alguien`, subtitle: `Meeting someone new`, turns: [
+  { speaker: `them`, es: `Hola, soy Marta. ¿Y tú?`, en: `Hi, I'm Marta. And you?`, phon: `OH-lah, soy MAR-tah. ee too` },
+  { speaker: `you`, es: `Mucho gusto, Marta. Me llamo David.`, en: `Nice to meet you, Marta. My name is David.`, phon: `MOO-choh GOOS-toh, MAR-tah. meh YAH-moh dah-VEED` },
+  { speaker: `them`, es: `¿De dónde eres?`, en: `Where are you from?`, phon: `deh DOHN-deh EH-rehs` },
+  { speaker: `you`, es: `Soy de Canadá. ¿Y tú?`, en: `I'm from Canada. And you?`, phon: `soy deh kah-nah-DAH. ee too` },
+  { speaker: `them`, es: `Yo soy de aquí, de la ciudad.`, en: `I'm from here, from the city.`, phon: `yoh soy deh ah-KEE, deh lah see-oo-DAHD` }
+]},
+{ title: `Check-in en el hotel`, subtitle: `Hotel check-in`, turns: [
+  { speaker: `you`, es: `Buenas tardes, tengo una reserva a nombre de López.`, en: `Good afternoon, I have a reservation under the name López.`, phon: `BWEH-nahs TAR-dess, TEN-goh OO-nah reh-SEHR-vah ah NOHM-breh deh LOH-pess` },
+  { speaker: `them`, es: `Claro, un momento por favor. ¿Me permite su pasaporte?`, en: `Of course, one moment please. May I have your passport?`, phon: `KLAH-roh, oon moh-MEN-toh por fah-VOR. meh pehr-MEE-teh soo pah-sah-POR-teh` },
+  { speaker: `you`, es: `Aquí tiene.`, en: `Here you go.`, phon: `ah-KEE tee-EH-neh` },
+  { speaker: `them`, es: `Perfecto, su habitación está en el tercer piso.`, en: `Perfect, your room is on the third floor.`, phon: `pehr-FEHK-toh, soo ah-bee-tah-see-OHN ess-TAH en el tehr-SEHR PEE-soh` },
+  { speaker: `you`, es: `Muchas gracias.`, en: `Thank you very much.`, phon: `MOO-chahs GRAH-see-ahs` }
+]},
+{ title: `De compras`, subtitle: `Shopping`, turns: [
+  { speaker: `you`, es: `Hola, ¿cuánto cuesta esta camisa?`, en: `Hi, how much does this shirt cost?`, phon: `OH-lah, KWAN-toh KWES-tah ESS-tah kah-MEE-sah` },
+  { speaker: `them`, es: `Cuesta veinte dólares.`, en: `It costs twenty dollars.`, phon: `KWES-tah VEIN-teh DOH-lah-rehs` },
+  { speaker: `you`, es: `¿Tiene una talla más grande?`, en: `Do you have a bigger size?`, phon: `tee-EH-neh OO-nah TAH-yah mahs GRAHN-deh` },
+  { speaker: `them`, es: `Sí, déjeme revisar en la bodega.`, en: `Yes, let me check in the back.`, phon: `see, DEH-heh-meh reh-vee-SAHR en lah boh-DEH-gah` },
+  { speaker: `you`, es: `Perfecto, espero aquí.`, en: `Perfect, I'll wait here.`, phon: `pehr-FEHK-toh, ess-PEH-roh ah-KEE` }
+]},
+{ title: `En el taxi`, subtitle: `In the taxi`, turns: [
+  { speaker: `you`, es: `Buenas, ¿me puede llevar al aeropuerto?`, en: `Hi, can you take me to the airport?`, phon: `BWEH-nahs, meh PWEH-deh yeh-VAR ahl ah-eh-roh-PWEHR-toh` },
+  { speaker: `them`, es: `Claro, súbase. ¿Tiene mucho equipaje?`, en: `Of course, hop in. Do you have a lot of luggage?`, phon: `KLAH-roh, SOO-bah-seh. tee-EH-neh MOO-choh eh-kee-PAH-heh` },
+  { speaker: `you`, es: `Solo dos maletas.`, en: `Just two suitcases.`, phon: `SOH-loh dohs mah-LEH-tahs` },
+  { speaker: `them`, es: `Perfecto, llegamos en veinte minutos.`, en: `Perfect, we'll arrive in twenty minutes.`, phon: `pehr-FEHK-toh, yeh-GAH-mohs en VEIN-teh mee-NOO-tohs` },
+  { speaker: `you`, es: `Gracias, no hay prisa.`, en: `Thanks, no rush.`, phon: `GRAH-see-ahs, noh eye PREE-sah` }
+]},
+{ title: `Haciendo planes`, subtitle: `Making plans`, turns: [
+  { speaker: `them`, es: `¿Qué vas a hacer este fin de semana?`, en: `What are you doing this weekend?`, phon: `keh vahs ah ah-SEHR ESS-teh feen deh seh-MAH-nah` },
+  { speaker: `you`, es: `Todavía no sé, ¿tienes alguna idea?`, en: `I don't know yet, do you have an idea?`, phon: `toh-dah-VEE-ah noh seh, tee-EH-nehs ahl-GOO-nah ee-DEH-ah` },
+  { speaker: `them`, es: `Podríamos ir a la playa el sábado.`, en: `We could go to the beach on Saturday.`, phon: `poh-DREE-ah-mohs eer ah lah PLAH-yah el SAH-bah-doh` },
+  { speaker: `you`, es: `Me parece una excelente idea.`, en: `That sounds like an excellent idea.`, phon: `meh pah-REH-seh OO-nah ex-seh-LEN-teh ee-DEH-ah` },
+  { speaker: `them`, es: `Perfecto, te paso a buscar a las diez.`, en: `Perfect, I'll pick you up at ten.`, phon: `pehr-FEHK-toh, teh PAH-soh ah boos-KAR ah lahs dee-ESS` }
+]},
+{ title: `Confirmando una reserva`, subtitle: `Confirming a reservation by phone`, turns: [
+  { speaker: `you`, es: `Hola, llamo para confirmar mi reserva para esta noche.`, en: `Hi, I'm calling to confirm my reservation for tonight.`, phon: `OH-lah, YAH-moh PAH-rah kohn-feer-MAR mee reh-SEHR-vah PAH-rah ESS-tah NOH-cheh` },
+  { speaker: `them`, es: `Claro, ¿a qué nombre está la reserva?`, en: `Sure, what name is the reservation under?`, phon: `KLAH-roh, ah keh NOHM-breh ess-TAH lah reh-SEHR-vah` },
+  { speaker: `you`, es: `Está a nombre de Ana Torres.`, en: `It's under the name Ana Torres.`, phon: `ess-TAH ah NOHM-breh deh AH-nah TOH-rrehs` },
+  { speaker: `them`, es: `Perfecto, los esperamos a las ocho.`, en: `Perfect, we'll expect you at eight.`, phon: `pehr-FEHK-toh, lohs ess-peh-RAH-mohs ah lahs OH-choh` },
+  { speaker: `you`, es: `Muchas gracias, hasta la noche.`, en: `Thank you very much, see you tonight.`, phon: `MOO-chahs GRAH-see-ahs, AHS-tah lah NOH-cheh` }
+]},
+{ title: `En la farmacia`, subtitle: `At the pharmacy`, turns: [
+  { speaker: `you`, es: `Buenas, necesito algo para el dolor de cabeza.`, en: `Hi, I need something for a headache.`, phon: `BWEH-nahs, neh-seh-SEE-toh AHL-goh PAH-rah el doh-LOR deh kah-BEH-sah` },
+  { speaker: `them`, es: `Le recomiendo este, tómelo con comida.`, en: `I recommend this one, take it with food.`, phon: `leh reh-koh-mee-EHN-doh ESS-teh, TOH-meh-loh kohn koh-MEE-dah` },
+  { speaker: `you`, es: `¿Cuántas veces al día?`, en: `How many times a day?`, phon: `KWAN-tahs VEH-sess ahl DEE-ah` },
+  { speaker: `them`, es: `Cada ocho horas, como máximo tres veces.`, en: `Every eight hours, three times maximum.`, phon: `KAH-dah OH-choh OH-rahs, KOH-moh MAHK-see-moh trehs VEH-sess` },
+  { speaker: `you`, es: `Entendido, gracias por su ayuda.`, en: `Got it, thanks for your help.`, phon: `en-ten-DEE-doh, GRAH-see-ahs por soo ah-YOO-dah` }
+]},
+{ title: `Charla con un compañero`, subtitle: `Small talk with a coworker`, turns: [
+  { speaker: `them`, es: `¿Cómo estuvo tu fin de semana?`, en: `How was your weekend?`, phon: `KOH-moh ess-TOO-voh too feen deh seh-MAH-nah` },
+  { speaker: `you`, es: `Muy tranquilo, me quedé en casa descansando.`, en: `Very quiet, I stayed home resting.`, phon: `mwee trahn-KEE-loh, meh keh-DEH en KAH-sah dess-kahn-SAHN-doh` },
+  { speaker: `them`, es: `Suena bien, yo fui a visitar a mis padres.`, en: `Sounds nice, I went to visit my parents.`, phon: `SWEH-nah bee-EHN, yoh fwee ah vee-see-TAHR ah mees PAH-drehs` },
+  { speaker: `you`, es: `Qué bueno, ¿cómo están ellos?`, en: `That's great, how are they?`, phon: `keh BWEH-noh, KOH-moh ess-TAHN EH-yohs` },
+  { speaker: `them`, es: `Están muy bien, gracias por preguntar.`, en: `They're doing well, thanks for asking.`, phon: `ess-TAHN mwee bee-EHN, GRAH-see-ahs por preh-goon-TAHR` }
+]},
+{ title: `Check-in en el aeropuerto`, subtitle: `Airport check-in`, turns: [
+  { speaker: `you`, es: `Buenos días, aquí está mi pasaporte y mi boleto.`, en: `Good morning, here's my passport and my ticket.`, phon: `BWEH-nohs DEE-ahs, ah-KEE ess-TAH mee pah-sah-POR-teh ee mee boh-LEH-toh` },
+  { speaker: `them`, es: `Gracias, ¿cuántas maletas va a despachar?`, en: `Thanks, how many bags are you checking?`, phon: `GRAH-see-ahs, KWAN-tahs mah-LEH-tahs vah ah dess-pah-CHAR` },
+  { speaker: `you`, es: `Solo una, por favor.`, en: `Just one, please.`, phon: `SOH-loh OO-nah, por fah-VOR` },
+  { speaker: `them`, es: `Perfecto, su puerta de embarque es la doce.`, en: `Perfect, your gate is twelve.`, phon: `pehr-FEHK-toh, soo PWEHR-tah deh em-BAR-keh ess lah DOH-seh` },
+  { speaker: `you`, es: `Muy amable, muchas gracias.`, en: `Very kind, thank you very much.`, phon: `mwee ah-MAH-bleh, MOO-chahs GRAH-see-ahs` }
+]},
+{ title: `Pidiendo una recomendación`, subtitle: `Asking for a recommendation`, turns: [
+  { speaker: `you`, es: `¿Me podrías recomendar un buen restaurante por aquí?`, en: `Could you recommend a good restaurant around here?`, phon: `meh poh-DREE-ahs reh-koh-men-DAHR oon bwen rress-tow-RAHN-teh por ah-KEE` },
+  { speaker: `them`, es: `Sí, hay uno excelente a dos calles de aquí.`, en: `Yes, there's an excellent one two blocks from here.`, phon: `see, eye OO-noh ex-seh-LEN-teh ah dohs KAH-yess deh ah-KEE` },
+  { speaker: `you`, es: `¿Qué tipo de comida sirven?`, en: `What kind of food do they serve?`, phon: `keh TEE-poh deh koh-MEE-dah SEER-vehn` },
+  { speaker: `them`, es: `Comida tradicional, te va a encantar.`, en: `Traditional food, you're going to love it.`, phon: `koh-MEE-dah trah-dee-see-oh-NAHL, teh vah ah en-kahn-TAHR` },
+  { speaker: `you`, es: `Perfecto, voy a ir esta noche.`, en: `Perfect, I'll go tonight.`, phon: `pehr-FEHK-toh, voy ah eer ESS-tah NOH-cheh` }
+]},
+{ title: `En el consultorio médico`, subtitle: `At the doctor's office`, turns: [
+  { speaker: `them`, es: `¿Qué síntomas tiene?`, en: `What symptoms do you have?`, phon: `keh SEEN-toh-mahs tee-EH-neh` },
+  { speaker: `you`, es: `Tengo tos y un poco de fiebre.`, en: `I have a cough and a bit of fever.`, phon: `TEN-goh tohs ee oon POH-koh deh fee-EH-breh` },
+  { speaker: `them`, es: `¿Desde cuándo se siente así?`, en: `Since when have you felt this way?`, phon: `DESS-deh KWAN-doh seh see-EN-teh ah-SEE` },
+  { speaker: `you`, es: `Desde hace tres días.`, en: `Since three days ago.`, phon: `DESS-deh AH-seh trehs DEE-ahs` },
+  { speaker: `them`, es: `Le voy a recetar algo, descanse mucho.`, en: `I'm going to prescribe something, rest a lot.`, phon: `leh voy ah reh-seh-TAHR AHL-goh, dess-KAHN-seh MOO-choh` }
+]},
+{ title: `Alquilando un carro`, subtitle: `Renting a car`, turns: [
+  { speaker: `you`, es: `Buenos días, quisiera alquilar un carro por tres días.`, en: `Good morning, I'd like to rent a car for three days.`, phon: `BWEH-nohs DEE-ahs, kee-see-EH-rah ahl-kee-LAHR oon KAH-rroh por trehs DEE-ahs` },
+  { speaker: `them`, es: `Claro, ¿qué tipo de carro prefiere?`, en: `Sure, what kind of car do you prefer?`, phon: `KLAH-roh, keh TEE-poh deh KAH-rroh preh-FEE-eh-reh` },
+  { speaker: `you`, es: `Algo pequeño y económico, por favor.`, en: `Something small and economical, please.`, phon: `AHL-goh peh-KEH-nyoh ee eh-koh-NOH-mee-koh, por fah-VOR` },
+  { speaker: `them`, es: `Perfecto, necesito su licencia de conducir.`, en: `Perfect, I need your driver's license.`, phon: `pehr-FEHK-toh, neh-seh-SEE-toh soo lee-SEN-see-ah deh kohn-doo-SEER` },
+  { speaker: `you`, es: `Aquí la tiene.`, en: `Here it is.`, phon: `ah-KEE lah tee-EH-neh` }
+]},
+{ title: `Devolviendo un producto`, subtitle: `Returning an item`, turns: [
+  { speaker: `you`, es: `Buenas tardes, quisiera devolver este producto.`, en: `Good afternoon, I'd like to return this product.`, phon: `BWEH-nahs TAR-dess, kee-see-EH-rah deh-vohl-VEHR ESS-teh proh-DOOK-toh` },
+  { speaker: `them`, es: `Claro, ¿cuál es el motivo de la devolución?`, en: `Sure, what's the reason for the return?`, phon: `KLAH-roh, kwahl ess el moh-TEE-voh deh lah deh-voh-loo-see-OHN` },
+  { speaker: `you`, es: `No es la talla correcta.`, en: `It's not the right size.`, phon: `noh ess lah TAH-yah koh-RREHK-tah` },
+  { speaker: `them`, es: `Sin problema, ¿tiene el recibo?`, en: `No problem, do you have the receipt?`, phon: `seen proh-BLEH-mah, tee-EH-neh el reh-SEE-boh` },
+  { speaker: `you`, es: `Sí, aquí está.`, en: `Yes, here it is.`, phon: `see, ah-KEE ess-TAH` }
+]}
 ];
 
-const DAILY_COUNT = 5;
+const DAILY_COUNT = 2;
+const YOUR_LINE_PAUSE_MS = 2400;
+const BETWEEN_LINE_PAUSE_MS = 350;
 
 function dayIndexFromEpoch() {
   const now = new Date();
@@ -299,7 +396,10 @@ function pickSpanishVoice() {
          voices.find(v => v.lang && v.lang.startsWith('es')) ||
          null;
 }
-function speak(text, rate) {
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = () => { cachedVoice = pickSpanishVoice(); };
+}
+function speakNow(text, rate) {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
@@ -309,60 +409,149 @@ function speak(text, rate) {
   if (voice) utter.voice = voice;
   speechSynthesis.speak(utter);
 }
-if ('speechSynthesis' in window) {
-  speechSynthesis.onvoiceschanged = () => { cachedVoice = pickSpanishVoice(); };
+function speakAndWait(text, rate) {
+  return new Promise(resolve => {
+    if (!('speechSynthesis' in window)) { resolve(); return; }
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'es-ES';
+    utter.rate = rate || 1;
+    const voice = cachedVoice || pickSpanishVoice();
+    if (voice) utter.voice = voice;
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    speechSynthesis.speak(utter);
+  });
+}
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function buildCard(item) {
+function buildCard(dialogue) {
   const card = document.createElement('div');
   card.className = 'card';
 
-  const tag = document.createElement('span');
-  tag.className = 'tag';
-  tag.textContent = item.cat;
-  card.appendChild(tag);
+  const head = document.createElement('div');
+  head.className = 'dlg-head';
+  const title = document.createElement('p');
+  title.className = 'dlg-title';
+  title.textContent = dialogue.title;
+  head.appendChild(title);
+  const subtitle = document.createElement('p');
+  subtitle.className = 'dlg-subtitle';
+  subtitle.textContent = dialogue.subtitle;
+  head.appendChild(subtitle);
+  card.appendChild(head);
 
-  const phrase = document.createElement('p');
-  phrase.className = 'phrase';
-  phrase.textContent = item.es;
-  card.appendChild(phrase);
+  const controls = document.createElement('div');
+  controls.className = 'controls';
 
-  const phon = document.createElement('p');
-  phon.className = 'phonetic';
-  phon.textContent = item.phon;
-  card.appendChild(phon);
-
-  const row = document.createElement('div');
-  row.className = 'btn-row';
-
-  const listenBtn = document.createElement('button');
-  listenBtn.className = 'btn listen';
-  listenBtn.textContent = '🔊 Listen';
-  listenBtn.addEventListener('click', () => speak(item.es, 1));
-  row.appendChild(listenBtn);
+  const playBtn = document.createElement('button');
+  playBtn.className = 'btn primary';
+  playBtn.textContent = '▶️ Play dialogue';
+  controls.appendChild(playBtn);
 
   const slowBtn = document.createElement('button');
-  slowBtn.className = 'btn listen';
-  slowBtn.textContent = '🐢 Slow';
-  slowBtn.addEventListener('click', () => speak(item.es, 0.6));
-  row.appendChild(slowBtn);
+  slowBtn.className = 'btn primary';
+  slowBtn.textContent = '🐢 Play slow';
+  controls.appendChild(slowBtn);
 
-  card.appendChild(row);
+  const translateBtn = document.createElement('button');
+  translateBtn.className = 'btn toggle';
+  translateBtn.textContent = 'Show translations';
+  controls.appendChild(translateBtn);
 
-  const meaningBtn = document.createElement('button');
-  meaningBtn.className = 'btn meaning';
-  meaningBtn.textContent = 'Show meaning';
-  card.appendChild(meaningBtn);
+  card.appendChild(controls);
 
-  const meaning = document.createElement('div');
-  meaning.className = 'meaning';
-  meaning.textContent = item.en;
-  card.appendChild(meaning);
-
-  meaningBtn.addEventListener('click', () => {
-    const shown = meaning.classList.toggle('shown');
-    meaningBtn.textContent = shown ? 'Hide meaning' : 'Show meaning';
+  translateBtn.addEventListener('click', () => {
+    const on = card.classList.toggle('show-en');
+    translateBtn.classList.toggle('on', on);
+    translateBtn.textContent = on ? 'Hide translations' : 'Show translations';
   });
+
+  const bubbles = document.createElement('div');
+  bubbles.className = 'bubbles';
+
+  const bubbleEls = dialogue.turns.map(turn => {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + turn.speaker;
+
+    const role = document.createElement('p');
+    role.className = 'bubble-role';
+    role.textContent = turn.speaker === 'you' ? 'You' : 'Them';
+    bubble.appendChild(role);
+
+    const top = document.createElement('div');
+    top.className = 'bubble-top';
+
+    const es = document.createElement('p');
+    es.className = 'bubble-es';
+    es.textContent = turn.es;
+    top.appendChild(es);
+
+    const speakIcon = document.createElement('button');
+    speakIcon.className = 'bubble-speak';
+    speakIcon.textContent = '🔊';
+    speakIcon.title = 'Play this line';
+    speakIcon.addEventListener('click', () => speakNow(turn.es, 1));
+    top.appendChild(speakIcon);
+
+    bubble.appendChild(top);
+
+    const phon = document.createElement('p');
+    phon.className = 'bubble-phon';
+    phon.textContent = turn.phon;
+    bubble.appendChild(phon);
+
+    const en = document.createElement('p');
+    en.className = 'bubble-en';
+    en.textContent = turn.en;
+    bubble.appendChild(en);
+
+    bubbles.appendChild(bubble);
+    return bubble;
+  });
+
+  card.appendChild(bubbles);
+
+  // --- Playback orchestration ---
+  let session = null;
+
+  function resetButtons() {
+    playBtn.textContent = '▶️ Play dialogue';
+    playBtn.disabled = false;
+    slowBtn.textContent = '🐢 Play slow';
+    slowBtn.disabled = false;
+    bubbleEls.forEach(b => b.classList.remove('active'));
+  }
+
+  async function runDialogue(rate, activeBtn, otherBtn) {
+    if (session) {
+      // Signal the in-flight run to stop; it owns resetting buttons/session itself
+      // once its current await resolves, avoiding a race on the shared `session`.
+      session.cancelled = true;
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      return;
+    }
+    const mySession = { cancelled: false };
+    session = mySession;
+    activeBtn.textContent = '⏹ Stop';
+    otherBtn.disabled = true;
+
+    for (let i = 0; i < dialogue.turns.length; i++) {
+      if (mySession.cancelled) break;
+      const turn = dialogue.turns[i];
+      bubbleEls.forEach((b, idx) => b.classList.toggle('active', idx === i));
+      await speakAndWait(turn.es, rate);
+      if (mySession.cancelled) break;
+      await wait(turn.speaker === 'you' ? YOUR_LINE_PAUSE_MS : BETWEEN_LINE_PAUSE_MS);
+    }
+
+    resetButtons();
+    session = null;
+  }
+
+  playBtn.addEventListener('click', () => runDialogue(1, playBtn, slowBtn));
+  slowBtn.addEventListener('click', () => runDialogue(0.65, slowBtn, playBtn));
 
   return card;
 }
@@ -370,7 +559,7 @@ function buildCard(item) {
 function setupMoreButton(btn, bank, shownIndices, section) {
   btn.addEventListener('click', () => {
     if (shownIndices.size >= bank.length) {
-      btn.textContent = `You've seen every phrase in the bank`;
+      btn.textContent = `You've seen every dialogue in the bank`;
       btn.disabled = true;
       return;
     }
@@ -382,7 +571,7 @@ function setupMoreButton(btn, bank, shownIndices, section) {
     section.appendChild(buildCard(bank[idx]));
 
     if (shownIndices.size >= bank.length) {
-      btn.textContent = `You've seen every phrase in the bank`;
+      btn.textContent = `You've seen every dialogue in the bank`;
       btn.disabled = true;
     }
   });
@@ -409,14 +598,14 @@ function updateStreak() {
 
 (function init() {
   const dayIdx = dayIndexFromEpoch();
-  const indices = dailyWindow(dayIdx, PHRASES.length, DAILY_COUNT);
-  const section = document.getElementById('phraseSection');
-  indices.forEach(i => section.appendChild(buildCard(PHRASES[i])));
+  const indices = dailyWindow(dayIdx, DIALOGUES.length, DAILY_COUNT);
+  const section = document.getElementById('dialogueSection');
+  indices.forEach(i => section.appendChild(buildCard(DIALOGUES[i])));
 
   document.getElementById('dayInfo').innerHTML = '<b>' + new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) + '</b>';
-  document.getElementById('phraseCount').textContent = PHRASES.length;
+  document.getElementById('dialogueCount').textContent = DIALOGUES.length;
 
-  setupMoreButton(document.getElementById('morePhraseBtn'), PHRASES, new Set(indices), section);
+  setupMoreButton(document.getElementById('moreDialogueBtn'), DIALOGUES, new Set(indices), section);
 
   updateStreak();
 })();
