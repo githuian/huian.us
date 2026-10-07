@@ -521,11 +521,13 @@ const TECH = [
   `The Factory is responsible for actual construction, which is how Hilt/Dagger hooks in (HiltViewModel generates a Factory that resolves constructor dependencies from the graph).`,
   `Because it's backed by ViewModelStore, the same instance is returned across configuration changes without re-invoking the factory.`,
 ]},
-{ q: `How does Navigation Compose differ from the legacy Fragment-based Navigation component?`,
+{ q: `How does Navigation 3 (Nav3) differ from the original Navigation Compose (Nav2), and why did Google introduce it?`,
   a: [
-  `Navigation Compose defines a NavHost with composable destinations directly (no Fragments/XML nav graph), and navigation is driven by a NavController the same way, but destinations are just composable functions.`,
-  `Passing arguments is typically done via the route string/NavType rather than Fragment arguments bundles, though you can also pass complex objects via a shared ViewModel scoped to the nav graph.`,
-  `Deep links, nested graphs, and back stack management concepts carry over, but there's no FragmentManager/transaction overhead — transitions are just Compose animations (AnimatedContent / enterTransition/exitTransition).`,
+  `Nav2's NavController/NavHost hides the back stack behind navigate()/popBackStack() and assumes one destination is visible at a time — which fights adaptive, multi-pane layouts (e.g. list-detail on tablets/foldables) that need two destinations rendered simultaneously.`,
+  `Nav3 flips that: you own the back stack directly as a plain mutable list of keys (e.g. a SnapshotStateList), and a NavDisplay composable (replacing NavHost) just renders whatever's currently in that list via an entryProvider mapping keys to content.`,
+  `Destinations are plain, typically serializable data classes/objects used as keys — type-safe by construction, not string routes parsed at runtime.`,
+  `Cross-cutting concerns (saved state, per-entry ViewModel scoping, lifecycle) are pluggable via NavEntryDecorators instead of being baked into NavController, and scene strategies (e.g. ListDetailSceneStrategy) let NavDisplay render multiple entries as panes for adaptive UI.`,
+  `Nav3 doesn't replace Nav2 overnight — they coexist, and Nav3 is positioned as the forward path especially for apps targeting multiple form factors; migration can be incremental since one can be nested inside the other.`,
 ]},
 { q: `What is Kotlin Multiplatform (KMP), and what are the tradeoffs of sharing business logic across Android and iOS?`,
   a: [
