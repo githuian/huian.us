@@ -92,11 +92,73 @@
     text-align: center;
   }
   .footer, .footer a { color: var(--muted); }
+  .version-btn {
+    font: inherit;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .version-btn:hover { color: var(--text); }
   .arrow {
     margin-left: auto;
     color: var(--muted);
     flex: none;
   }
+
+  /* Release notes dialog */
+  .notes {
+    width: min(560px, calc(100vw - 32px));
+    max-height: min(80vh, 720px);
+    padding: 0;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .notes::backdrop { background: rgba(0, 0, 0, 0.55); }
+  .notes-head {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  .notes-head h2 { font-size: 1.05rem; margin: 0; }
+  .notes-close {
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .notes-close:hover { color: var(--text); }
+  .notes-body { padding: 4px 18px 18px; font-size: 0.92rem; line-height: 1.55; }
+  .release { padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .release:last-child { border-bottom: 0; }
+  .release-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .release-title h3 { font-size: 1rem; margin: 0; }
+  .release-title time, .notes-msg { color: var(--muted); font-size: 0.85rem; }
+  .current {
+    font-size: 0.72rem;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 0 8px;
+  }
+  .release h2 { font-size: 0.9rem; margin: 14px 0 4px; }
+  .release p { margin: 8px 0; }
+  .release ul { margin: 4px 0; padding-left: 20px; }
+  .release a { color: var(--accent); }
+  .release code { font-size: 0.85em; background: var(--panel-2); border-radius: 4px; padding: 1px 4px; }
+  .notes-all { display: block; margin-top: 12px; color: var(--accent); font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -151,7 +213,87 @@
     </a>
   </div>
 
-  <p class="footer"><a href="/privacy/">Privacy Policy</a> · <span id="site-version">v1.0.0</span></p>
+  <p class="footer"><a href="/privacy/">Privacy Policy</a> · <button type="button" class="version-btn" id="site-version" aria-haspopup="dialog" title="Release notes">v1.1.0</button></p>
 </div>
+
+<dialog class="notes" id="notes" aria-labelledby="notes-title">
+  <div class="notes-head">
+    <h2 id="notes-title">Release notes</h2>
+    <button type="button" class="notes-close" id="notes-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="notes-body" id="notes-body"><p class="notes-msg">Loading…</p></div>
+</dialog>
+
+<script>
+  // Release notes come straight from the repo's GitHub releases, already rendered to HTML.
+  (() => {
+    const RELEASES = 'https://github.com/githuian/huian.us/releases';
+    const API = 'https://api.github.com/repos/githuian/huian.us/releases?per_page=20';
+    const btn = document.getElementById('site-version');
+    const dlg = document.getElementById('notes');
+    const body = document.getElementById('notes-body');
+    const current = btn.textContent.trim();
+    let loaded = false;
+
+    const fmt = (iso) => new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+    function render(releases) {
+      body.replaceChildren();
+      if (!releases.length) {
+        body.innerHTML = '<p class="notes-msg">No releases yet.</p>';
+        return;
+      }
+      for (const r of releases) {
+        const sec = document.createElement('section');
+        sec.className = 'release';
+        const title = document.createElement('div');
+        title.className = 'release-title';
+        const h = document.createElement('h3');
+        h.textContent = r.name || r.tag_name;
+        const time = document.createElement('time');
+        time.dateTime = r.published_at;
+        time.textContent = fmt(r.published_at);
+        title.append(h, time);
+        if (r.tag_name === current) {
+          const tag = document.createElement('span');
+          tag.className = 'current';
+          tag.textContent = 'Current';
+          title.append(tag);
+        }
+        const notes = document.createElement('div');
+        notes.innerHTML = r.body_html || '';
+        for (const a of notes.querySelectorAll('a')) { a.target = '_blank'; a.rel = 'noopener'; }
+        sec.append(title, notes);
+        body.append(sec);
+      }
+      const all = document.createElement('a');
+      all.className = 'notes-all';
+      all.href = RELEASES;
+      all.target = '_blank';
+      all.rel = 'noopener';
+      all.textContent = 'All releases on GitHub ↗';
+      body.append(all);
+    }
+
+    async function load() {
+      try {
+        const res = await fetch(API, { headers: { Accept: 'application/vnd.github.html+json' } });
+        if (!res.ok) throw new Error(res.status);
+        render((await res.json()).filter((r) => !r.draft));
+        loaded = true;
+      } catch {
+        body.innerHTML = `<p class="notes-msg">Couldn't load the release notes right now. <a href="${RELEASES}" target="_blank" rel="noopener">Read them on GitHub ↗</a></p>`;
+      }
+    }
+
+    btn.addEventListener('click', () => {
+      dlg.showModal();
+      if (!loaded) load();
+    });
+    document.getElementById('notes-close').addEventListener('click', () => dlg.close());
+    // Clicking the dimmed area outside the dialog closes it.
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  })();
+</script>
 </body>
 </html>

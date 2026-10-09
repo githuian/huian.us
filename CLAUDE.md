@@ -22,7 +22,7 @@ number; one that adds or removes an app, page or feature bumps **minor**
 (reset patch to 0); consider **major** for a redesign or other large change.
 Bump the version **before** pushing, not after.
 
-The version lives in exactly one place: `<span id="site-version">` in the
+The version lives in exactly one place: `id="site-version"` (the version button) in the
 homepage footer (`index.html`). Every bump is committed, tagged `vX.Y.Z` and
 pushed with the tag (`git push origin main --follow-tags` after
 `git tag -a vX.Y.Z -m ...`), then released on GitHub
